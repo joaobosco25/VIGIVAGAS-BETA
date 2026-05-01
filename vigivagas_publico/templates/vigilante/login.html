@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login do Vigilante | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Área do vigilante</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <a class="btn btn-secondary" href="{{ url_for('vigilante.cadastro') }}">Criar conta</a>
+        </div>
+    </header>
+    <main class="login-shell">
+        <div class="auth-layout">
+            <section class="auth-aside">
+                <span class="hero-tag">Profissionais de segurança privada</span>
+                <h2>Encontre oportunidades com um painel claro para candidatura e acompanhamento.</h2>
+                <p>Seu acesso reúne vagas abertas, histórico de candidaturas e leitura do andamento do processo sem poluição visual.</p>
+                <ul class="auth-checklist">
+                    <li><strong>Vagas com contexto</strong><span>Veja empresa, local, escala, requisitos e descrição completa.</span></li>
+                    <li><strong>Candidatura em poucos cliques</strong><span>Com o perfil pronto, você avança mais rápido nas vagas ativas.</span></li>
+                    <li><strong>Acompanhamento contínuo</strong><span>Consulte observações e status sem depender de contato externo.</span></li>
+                </ul>
+                <div class="auth-mini-stats">
+                    <div class="auth-mini-stat"><strong>1 painel</strong><span>para vagas e candidaturas</span></div>
+                    <div class="auth-mini-stat"><strong>+ agilidade</strong><span>na rotina de busca de emprego</span></div>
+                </div>
+            </section>
+            <section class="login-container">
+                <span class="section-kicker">Acesso do vigilante</span>
+                <h1>Entrar na área do vigilante</h1>
+                <p>Consulte vagas ativas, candidate-se e acompanhe o andamento do seu processo em um painel otimizado.</p>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash flash-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                <form method="post" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group"><label>E-mail</label><input type="email" name="email" required></div>
+                    <div class="form-group"><label>Senha</label><input type="password" name="password" required></div>
+                    <button class="btn btn-primary full" type="submit">Entrar como vigilante</button>
+                </form>
+                <p class="form-help"><a href="{{ url_for('vigilante.esqueci_senha') }}">Esqueci minha senha</a></p>
+            </section>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

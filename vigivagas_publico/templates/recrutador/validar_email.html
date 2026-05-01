@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar e-mail do recrutador | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Validação do recrutador</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <a class="btn btn-secondary" href="{{ url_for('recrutador.login') }}">Voltar ao login</a>
+        </div>
+    </header>
+
+    <main class="login-shell">
+        <div class="auth-layout">
+            <section class="auth-aside">
+                <span class="hero-tag">Confirmação de segurança</span>
+                <h2>Valide o e-mail da empresa antes de acessar o painel.</h2>
+                <p>Enviamos um código de 5 números para o e-mail informado no cadastro. Essa etapa evita cadastros falsos e protege as vagas publicadas.</p>
+                <ul class="auth-checklist">
+                    <li><strong>Código de 5 números</strong><span>Digite exatamente o código recebido por e-mail.</span></li>
+                    <li><strong>Validade curta</strong><span>O código expira em 15 minutos por segurança.</span></li>
+                    <li><strong>Análise do Maurício</strong><span>Após validar o e-mail, o cadastro ainda precisa ser liberado no painel administrativo.</span></li>
+                </ul>
+            </section>
+
+            <section class="login-container">
+                <span class="section-kicker">Validar e-mail</span>
+                <h1>Digite o código recebido</h1>
+                <p>Confira sua caixa de entrada e também a pasta de spam/lixo eletrônico.</p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash flash-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="post" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="email">E-mail do recrutador</label>
+                        <input type="email" id="email" name="email" value="{{ email or '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="token">Código de validação</label>
+                        <input type="text" id="token" name="token" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" placeholder="00000" required>
+                        <small class="field-help">Digite os 5 números enviados para o e-mail informado no cadastro.</small>
+                    </div>
+                    <button class="btn btn-primary full" type="submit">Validar e-mail</button>
+                </form>
+
+                <form method="post" action="{{ url_for('recrutador.reenviar_validacao') }}" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="reenviar_email">Não recebeu o código?</label>
+                        <input type="email" id="reenviar_email" name="email" value="{{ email or '' }}" placeholder="Digite o e-mail do recrutador" required>
+                    </div>
+                    <button class="btn btn-secondary full" type="submit">Reenviar código</button>
+                </form>
+            </section>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

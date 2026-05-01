@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir senha | VigiVagas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <main class="login-shell">
+        <section class="login-container">
+            <span class="section-kicker">Nova senha do vigilante</span>
+            <h1>Criar nova senha</h1>
+            <p>Digite uma senha forte. O link expira em 1 hora e só pode ser usado uma vez.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <form method="post" class="candidate-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group"><label>Nova senha</label><input type="password" name="password" required></div>
+                <div class="form-group"><label>Confirmar nova senha</label><input type="password" name="confirm_password" required></div>
+                <button class="btn btn-primary full" type="submit">Salvar nova senha</button>
+            </form>
+            <p class="form-help"><a href="{{ url_for('vigilante.login') }}">Voltar para o login</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

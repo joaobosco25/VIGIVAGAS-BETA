@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro do Vigilante | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page vigilante-registration-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Cadastro do vigilante</span>
+                </div>
+            </a>
+<button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <a class="btn btn-secondary" href="{{ url_for('public.index') }}">Voltar ao site</a>
+        </div>
+    </header>
+
+    <main class="form-page recruiter-page vigilante-registration-shell">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="dashboard-card registration-hero-card">
+                <div class="registration-hero-grid">
+                    <div class="nome">
+                        <span class="section-kicker">Cadastro profissional</span>
+                        <h1>Monte seu perfil de vigilante com clareza e rapidez</h1>
+                        <p>Preencha seus dados profissionais e de formação para participar das vagas ativas da plataforma. Os campos marcados com * são obrigatórios.</p>
+                        <div class="registration-highlight-list top-gap">
+                            <div class="registration-highlight-item">
+                                <strong>Acesso imediato</strong>
+                                <p>Após concluir o cadastro, você já pode entrar na sua área de vigilante.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="registration-side-card">
+                        <div class="mini-card registration-side-box">
+                            <strong>Já tenho cadastro</strong>
+                            <p>Se você já criou sua conta, entre direto na área do vigilante.</p>
+                            <a class="btn btn-secondary full" href="{{ url_for('vigilante.login') }}">Entrar na área do vigilante</a>
+                        </div>
+                        
+                    </aside>
+                </div>
+            </section>
+
+            <section class="form-shell vigilante-form-shell">
+                <form method="POST" class="candidate-form vigilante-registration-form" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <section class="soft-card registration-section-card">
+                        <div class="section-title-row compact-stack">
+                            <div>
+                                <span class="section-kicker">Etapa 1</span>
+                                <h2>Dados pessoais e contato</h2>
+                                <p>Preencha as informações básicas para identificação e contato.</p>
+                            </div>
+                        </div>
+                        <div class="form-grid two-columns form-grid-balanced">
+                            <div class="form-group">
+                                <label for="email">1 - E-mail *</label>
+                                <input type="email" id="email" name="email" autocomplete="email" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nome">2 - Nome Completo *</label>
+                                <input type="text" id="nome" name="nome" autocomplete="name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cpf">3 - CPF *</label>
+                                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" inputmode="numeric" autocomplete="off" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="telefone">4 - Telefone *</label>
+                                <input type="text" id="telefone" name="telefone" placeholder="(00) 00000-0000" autocomplete="tel" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cep">5 - CEP *</label>
+                                <input type="text" id="cep" name="cep" placeholder="00000-000" inputmode="numeric" autocomplete="postal-code" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="estado">6 - Estado (UF) *</label>
+                                <input type="text" id="estado" name="estado" maxlength="2" autocomplete="address-level1" required>
+                            </div>
+
+                            <div class="form-group two-columns-span">
+                                <label for="endereco">7 - Endereço *</label>
+                                <input type="text" id="endereco" name="endereco" autocomplete="street-address" required>
+                                <small class="field-help">O CEP busca o endereço automaticamente. Complete número e complemento se necessário.</small>
+                                <div id="cep-status" class="cep-status" aria-live="polite">Digite o CEP para preencher endereço, cidade e estado.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cidade">8 - Cidade *</label>
+                                <input type="text" id="cidade" name="cidade" autocomplete="address-level2" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="objetivo_cargo">9 - Objetivo/Cargo Profissional</label>
+                                <input type="text" id="objetivo_cargo" name="objetivo_cargo" placeholder="Ex.: Vigilante patrimonial, escolta armada">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="soft-card registration-section-card top-gap">
+                        <div class="section-title-row compact-stack">
+                            <div>
+                                <span class="section-kicker">Etapa 2</span>
+                                <h2>Escolaridade e formação</h2>
+                                <p>Informe sua escolaridade e a situação do Curso de Formação de Vigilantes.</p>
+                            </div>
+                        </div>
+                        <div class="form-grid two-columns form-grid-balanced">
+                            <div class="form-group">
+                                <label for="escolaridade">10 - Escolaridade *</label>
+                                <select id="escolaridade" name="escolaridade" required>
+                                    <option value="">Selecione</option>
+                                    <option value="FUNDAMENTAL COMPLETO">Fundamental Completo</option>
+                                    <option value="ENSINO FUNDAMENTAL INCOMPLETO">Ensino fundamental incompleto</option>
+                                    <option value="ENSINO MEDIO COMPLETO">Ensino Medio completo</option>
+                                    <option value="ENSINO MEDIO INCOMPLETO">Ensino Medio incompleto</option>
+                                    <option value="ENSINO SUPERIOR COMPLETO">Ensino Superior completo</option>
+                                    <option value="ENSINO SUPERIOR INCOMPLETO">Ensino Superior incompleto</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="possui_cfv">11 - Possui Curso de Formação de Vigilantes - CFV? *</label>
+                                <select id="possui_cfv" name="possui_cfv" required>
+                                    <option value="">Selecione</option>
+                                    <option value="SIM">Sim</option>
+                                    <option value="NAO">Não</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group two-columns-span" id="instituicao-wrapper" style="display:none;">
+                                <label for="instituicao_formacao">11.1 - Se sim, em qual instituição se formou? *</label>
+                                <input type="text" id="instituicao_formacao" name="instituicao_formacao" placeholder="Nome da instituição de formação">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="soft-card registration-section-card top-gap">
+                        <div class="section-title-row compact-stack">
+                            <div>
+                                <span class="section-kicker">Etapa 3</span>
+                                <h2>Extensões e certificações</h2>
+                                <p>Selecione abaixo as extensões em que você possui certificado.</p>
+                            </div>
+                        </div>
+                        <div class="form-grid two-columns form-grid-balanced">
+                            <div class="form-group">
+                                <label for="ext_ctv">12.1 - Transporte de Valores - CTV *</label>
+                                <select id="ext_ctv" name="ext_ctv" required>
+                                    <option value="SIM">Sim</option>
+                                    <option value="NAO" selected>Não</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ext_cea">12.2 - Escolta Armada - CEA *</label>
+                                <select id="ext_cea" name="ext_cea" required>
+                                    <option value="SIM">Sim</option>
+                                    <option value="NAO" selected>Não</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ext_csp">12.3 - Segurança Pessoal - CSP *</label>
+                                <select id="ext_csp" name="ext_csp" required>
+                                    <option value="SIM">Sim</option>
+                                    <option value="NAO" selected>Não</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ext_cnl1">12.4 - Equipamentos Não Letais I - CNL I *</label>
+                                <select id="ext_cnl1" name="ext_cnl1" required>
+                                    <option value="SIM">Sim</option>
+                                    <option value="NAO" selected>Não</option>
+                                </select>
+                            </div>
+                            <div class="form-group two-columns-span">
+                                <label for="ext_ces">12.5 - Segurança para Eventos Sociais - CES *</label>
+                                <select id="ext_ces" name="ext_ces" required>
+                                    <option value="SIM">Sim</option>
+                                    <option value="NAO" selected>Não</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="soft-card registration-section-card top-gap">
+                        <div class="section-title-row compact-stack">
+                            <div>
+                                <span class="section-kicker">Etapa 4</span>
+                                <h2>Reciclagem e experiência</h2>
+                                <p>Esses dados ajudam a apresentar seu histórico profissional aos recrutadores.</p>
+                            </div>
+                        </div>
+                        <div class="form-grid two-columns form-grid-balanced">
+                            <div class="form-group">
+                                <label for="data_ultima_reciclagem">13 - Data da última reciclagem *</label>
+                                <input type="date" id="data_ultima_reciclagem" name="data_ultima_reciclagem" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="curso_ultima_reciclagem">14 - Curso da última reciclagem *</label>
+                                <select id="curso_ultima_reciclagem" name="curso_ultima_reciclagem" required>
+                                    <option value="">Selecione</option>
+                                    <option value="FORMACAO DE VIGILANTES">Formação de Vigilantes</option>
+                                    <option value="TRANSPORTE DE VALORES">Transporte de Valores</option>
+                                    <option value="ESCOLTA ARMADA">Escolta Armada</option>
+                                    <option value="SEGURANCA PESSOAL PRIVADA">Segurança Pessoal Privada</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group two-columns-span">
+                                <label for="ultima_experiencia_profissional">15 - Última experiência profissional *</label>
+                                <textarea id="ultima_experiencia_profissional" name="ultima_experiencia_profissional" rows="5" required placeholder="Por favor, especifique nome da empresa, período e principais atividades."></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="soft-card registration-section-card top-gap">
+                        <div class="section-title-row compact-stack">
+                            <div>
+                                <span class="section-kicker">Etapa 5</span>
+                                <h2>Acesso à sua conta</h2>
+                                <p>Crie sua senha de acesso e conclua a verificação final.</p>
+                            </div>
+                        </div>
+                        <div class="form-grid two-columns form-grid-balanced">
+                            <div class="form-group">
+                                <label for="password">16 - Crie sua senha *</label>
+                                <input type="password" id="password" name="password" minlength="10" required>
+                                <small class="field-help">Use pelo menos 10 caracteres, com letra maiúscula, minúscula, número e caractere especial.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirm_password">17 - Confirme sua senha *</label>
+                                <input type="password" id="confirm_password" name="confirm_password" minlength="10" required>
+                            </div>
+
+                            <div class="form-group two-columns-span registration-captcha-block">
+                                <label for="captcha_resposta">CAPTCHA *</label>
+                                <p class="form-help">{{ captcha_question }}</p>
+                                <input type="text" id="captcha_resposta" name="captcha_resposta" placeholder="Digite a resposta" required>
+                                <small class="field-help">Responda a conta para concluir o cadastro.</small>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="registration-submit-bar top-gap">
+                    <label class="form-check lgpd-check">
+                        <input type="checkbox" name="aceite_lgpd" value="1" required>
+                        Li e aceito a <a href="{{ url_for('public.privacidade') }}" target="_blank">Política de Privacidade</a> e os <a href="{{ url_for('public.termos') }}" target="_blank">Termos de Uso</a>.
+                    </label>
+
+                        <button class="btn btn-primary registration-submit-btn" type="submit">Enviar cadastro do vigilante</button>
+                        <br>
+                        <p>Já tem cadastro? <a href="{{ url_for('vigilante.login') }}">Entrar na área do vigilante</a></p>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const possuiCfv = document.getElementById('possui_cfv');
+        const instituicaoWrapper = document.getElementById('instituicao-wrapper');
+        const instituicaoInput = document.getElementById('instituicao_formacao');
+
+        function toggleInstituicao() {
+            const show = possuiCfv.value === 'SIM';
+            instituicaoWrapper.style.display = show ? 'block' : 'none';
+            instituicaoInput.required = show;
+            if (!show) instituicaoInput.value = '';
+        }
+
+        possuiCfv.addEventListener('change', toggleInstituicao);
+        toggleInstituicao();
+    </script>
+    <script src="{{ url_for('static', filename='address-autofill.js') }}"></script>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

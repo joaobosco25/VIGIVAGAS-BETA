@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VigiVagas | Empregos para Vigilantes</title>
+    <meta name="description" content="Plataforma de empregos para vigilantes.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand" aria-label="Página inicial VigiVagas">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Empregos para vigilantes</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+
+            <nav class="main-nav" aria-label="Navegação principal">
+                <a href="#inicio">Início</a>
+                <a href="#vagas">Vagas</a>
+                <a href="#empresas">Empresas</a>
+                <a href="#acessos">Acessos</a>
+                <a href="#cursos">Cursos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" id="inicio">
+            <div class="hero-overlay"></div>
+            <div class="container hero-content">
+                <span class="hero-tag">Plataforma voltada à segurança privada</span>
+                <h1>Conectamos vigilantes preparados a recrutadores que precisam contratar com mais confiança.</h1>
+                <p>
+                    Um ambiente simples, profissional e direto para quem busca vaga, quer publicar oportunidades e precisa acompanhar candidaturas sem ruído.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="{{ url_for('vigilante.cadastro') }}">Criar conta de vigilante</a>
+                    <a class="btn btn-secondary" href="{{ url_for('recrutador.login') }}">Entrar como recrutador</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="vagas">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="section-kicker">Oportunidades abertas</span>
+                    <h2>Vagas para vigilantes em operação</h2>
+                    <p>Consulte as vagas ativas e avance para a candidatura com o seu perfil já cadastrado.</p>
+                </div>
+
+                {% if vagas %}
+                    <div class="cards-grid three-columns vacancy-grid">
+                        {% for vaga in vagas %}
+                            <article class="info-card vacancy-card">
+                                <div class="vacancy-meta-top">
+                                    <span class="inline-badge">{{ vaga['cidade'] }} - {{ vaga['estado'] }}</span>
+                                    {% if vaga['empresa_verificada'] %}<span class="inline-badge">Empresa verificada</span>{% endif %}
+                                    <span class="inline-badge neutral">{{ vaga['status'] }}</span>
+                                </div>
+
+                                <h3>{{ vaga['titulo'] }}</h3>
+
+                                <div class="vacancy-info-list">
+                                    <p><strong>Empresa:</strong> {{ vaga['empresa'] }}</p>
+                                    <p><strong>Escala:</strong> {{ vaga['escala'] or 'A combinar' }}</p>
+                                    {% if vaga['empresa_verificada'] and vaga['descricao_empresa'] %}<p><strong>Empresa:</strong> {{ vaga['descricao_empresa'] }}</p>{% endif %}
+                                    {% if vaga['empresa_verificada'] and vaga['site_empresa'] %}<p><strong>Site:</strong> <a href="{{ vaga['site_empresa'] }}" target="_blank" rel="noopener noreferrer">{{ vaga['site_empresa'] }}</a></p>{% endif %}
+                                    <p><strong>Salário:</strong> {{ vaga['salario'] or 'Informado no processo' }}</p>
+                                    {% if vaga['requisitos'] %}
+                                        <p><strong>Requisitos:</strong> {{ vaga['requisitos'] }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <details class="vacancy-accordion">
+                                    <summary>Descrição da vaga</summary>
+                                    <div class="vacancy-description">
+                                        <p>{{ vaga['descricao'] }}</p>
+                                    </div>
+                                </details>
+
+                                <div class="vacancy-actions">
+                                    {% if session.get('vigilante_id') %}
+                                        <form method="POST" action="{{ url_for('vigilante.candidatar', vaga_id=vaga['id']) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button class="btn btn-primary" type="submit">Candidatar-se</button>
+                                        </form>
+                                    {% else %}
+                                        <a class="btn btn-primary" href="{{ url_for('vigilante.login') }}">Entrar para me candidatar</a>
+                                    {% endif %}
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">Ainda não há vagas ativas publicadas. Assim que entrarem novas oportunidades, elas aparecerão aqui.</div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="section section-soft" id="empresas">
+            <div class="container split-layout">
+                <div>
+                    <div class="section-heading left">
+                        <span class="section-kicker">Para recrutadores</span>
+                        <h2>Publique vagas e acompanhe o funil em um painel claro</h2>
+                        <p>
+                            O recrutador ganha visibilidade das candidaturas, organiza o pipeline e reduz ruído operacional no processo seletivo.
+                        </p>
+                    </div>
+                    <ul class="feature-list">
+                        <li>Publicação rápida de vagas</li>
+                        <li>Consulta de candidatos por vaga</li>
+                        <li>Atualização de status com observações</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-panel">
+                    <h3>Quem usa o painel dos recrutadores?</h3>
+                    <p>
+                        Empresas de segurança privada, prestadores de serviço, condomínios, indústrias e operações com demanda recorrente por vigilantes.
+                    </p>
+                    <a class="btn btn-primary full" href="{{ url_for('recrutador.login') }}">Acessar painel dos recrutadores</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="acessos">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="section-kicker">Entradas do sistema</span>
+                    <h2>Cada perfil com sua própria área</h2>
+                    <p>O VigiVagas agora trabalha com acessos separados para vigilantes, recrutadores e gestão da plataforma.</p>
+                </div>
+
+                <div class="cards-grid three-columns">
+                    <article class="access-card">
+                        <h3>Área do Vigilante</h3>
+                        <p>Cadastre seu perfil, candidate-se às vagas e acompanhe o andamento de cada processo.</p>
+                        <a class="btn btn-primary" href="{{ url_for('vigilante.cadastro') }}">Criar conta</a>
+                    </article>
+
+                    <article class="access-card recruiter">
+                        <h3>Painel dos Recrutadores</h3>
+                        <p>Publique vagas, visualize candidatos e atualize status do processo seletivo com clareza.</p>
+                        <a class="btn btn-secondary" href="{{ url_for('recrutador.login') }}">Entrar no painel</a>
+                    </article>
+
+                    <article class="access-card">
+                        <h3>Operação interna</h3>
+                        <p>Áreas internas da plataforma ficam isoladas do site público para reduzir exposição e reforçar segurança operacional.</p>
+                        <span class="btn btn-secondary" style="opacity:.7;cursor:default;">Acesso interno isolado</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-dark" id="cursos">
+            <div class="container split-layout">
+                <div>
+                    <div class="section-heading left light">
+                        <span class="section-kicker">Desenvolvimento profissional</span>
+                        <h2>Capacitação também pesa na contratação</h2>
+                        <p>Quem atua como vigilante sabe: formação, reciclagem e extensões aumentam empregabilidade e confiança no processo.</p>
+                    </div>
+                </div>
+                <div class="course-box">
+                    <h3>Seu banco de talentos fica mais forte</h3>
+                    <p>Formação de Vigilantes, Reciclagem, Escolta Armada, Transporte de Valores, Grandes Eventos e cursos complementares.</p>
+                    <a class="btn btn-light full" href="{{ url_for('vigilante.cadastro') }}">Quero criar minha conta</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

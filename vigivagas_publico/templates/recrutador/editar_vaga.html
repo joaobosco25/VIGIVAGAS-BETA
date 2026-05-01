@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Vaga | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('recrutador.dashboard', _anchor='gestao-vagas') }}" class="brand">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Editar vaga</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <a class="btn btn-secondary" href="{{ url_for('recrutador.dashboard', _anchor='gestao-vagas') }}">Voltar ao painel</a>
+        </div>
+    </header>
+
+    <main class="panel-shell">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="panel-header-card">
+                <span class="panel-badge">Área do recrutador</span>
+                <h1>Editar vaga</h1>
+                <p>Atualize os dados da vaga selecionada e salve para substituir as informações anteriores.</p>
+            </section>
+
+            <section class="soft-card top-gap">
+                <div class="section-title-row">
+                    <div>
+                        <span class="section-kicker">Ajuste operacional</span>
+                        <h2>{{ vaga['titulo'] }}</h2>
+                        <p>{{ vaga['empresa'] }} · {{ vaga['cidade'] }} - {{ vaga['estado'] }}</p>
+                    </div>
+                </div>
+
+                <form method="POST" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="titulo">Título da vaga *</label>
+                            <input id="titulo" type="text" name="titulo" value="{{ vaga['titulo'] }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="empresa">Empresa *</label>
+                            <input id="empresa" type="text" name="empresa" value="{{ vaga['empresa'] }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cidade">Cidade *</label>
+                            <input id="cidade" type="text" name="cidade" value="{{ vaga['cidade'] }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estado">Estado *</label>
+                            <input id="estado" type="text" name="estado" maxlength="2" value="{{ vaga['estado'] }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="escala">Escala</label>
+                            <input id="escala" type="text" name="escala" value="{{ vaga['escala'] or '' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salario">Salário</label>
+                            <input id="salario" type="text" name="salario" value="{{ vaga['salario'] or '' }}">
+                        </div>
+
+                        <div class="form-group two-columns-span">
+                            <label for="requisitos">Requisitos</label>
+                            <input id="requisitos" type="text" name="requisitos" value="{{ vaga['requisitos'] or '' }}">
+                        </div>
+
+                        <div class="form-group two-columns-span">
+                            <label for="contato">Contato do processo</label>
+                            <input id="contato" type="text" name="contato" value="{{ vaga['contato'] or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição da vaga *</label>
+                        <textarea id="descricao" name="descricao" rows="6" required>{{ vaga['descricao'] }}</textarea>
+                    </div>
+
+                    <div class="panel-actions">
+                        <button class="btn btn-primary" type="submit">Salvar alterações</button>
+                        <a class="btn btn-secondary" href="{{ url_for('recrutador.dashboard', _anchor='gestao-vagas') }}">Cancelar</a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

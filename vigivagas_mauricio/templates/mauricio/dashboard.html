@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Maurício | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('mauricio.dashboard') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Painel do Maurício</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <form method="POST" action="{{ url_for('mauricio.logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-secondary" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="panel-shell">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="panel-header-card">
+                <div class="panel-header-top">
+                    <div>
+                        <span class="panel-badge">Visão global do sistema</span>
+                        <h1>Painel do Maurício</h1>
+                        <p>Acompanhe recrutadores, vigilantes, vagas, candidaturas e sinais de fraude em um único lugar.</p>
+                    </div>
+                    <div class="muted-box">
+                        <strong>Banco compartilhado</strong><br>
+                        Este painel usa o mesmo banco do site público e do painel de recrutadores/vigilantes.
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-header-card" style="margin-top:0; margin-bottom:22px; padding:26px 28px;">
+                <div class="panel-lead-grid">
+                    <div>
+                        <span class="section-kicker" style="background: rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.14);">Ritmo da operação</span>
+                        <h2 style="color:#fff; margin-bottom:8px;">O que merece atenção agora</h2>
+                        <p style="margin-bottom:0;">Use os blocos abaixo para revisar novos cadastros, acompanhar vagas abertas e filtrar candidatos com mais agilidade.</p>
+                    </div>
+                    <div class="quick-grid">
+                        <article class="quick-card"><strong>Revisão diária</strong><p>Valide recrutadores pendentes e limpe gargalos antes de liberar novas vagas.</p></article>
+                        <article class="quick-card"><strong>Monitoramento leve</strong><p>Os botões de mostrar mais ajudam a navegar sem pesar o painel.</p></article>
+                        <article class="quick-card"><strong>Exportação pronta</strong><p>Quando precisar fechar análise, exporte os dados da seção correspondente.</p></article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="metric-strip">
+            <nav class="panel-nav top-gap">
+                <a href="#secao-recrutadores">Recrutadores</a>
+                <a href="#secao-vigilantes">Vigilantes</a>
+                <a href="#secao-vagas">Vagas</a>
+                <a href="#secao-candidaturas">Candidaturas</a>
+            </nav>
+
+                <article class="metric-card"><span>Recrutadores</span><strong>{{ resumo.recrutadores }}</strong><p>Empresas cadastradas na plataforma.</p></article>
+                <article class="metric-card"><span>Pendentes</span><strong>{{ resumo.recrutadores_pendentes }}</strong><p>Aguardando análise.</p></article>
+                <article class="metric-card"><span>Verificados</span><strong>{{ resumo.recrutadores_verificados }}</strong><p>Contas com maior confiança.</p></article>
+                <article class="metric-card"><span>Vigilantes</span><strong>{{ resumo.vigilantes }}</strong><p>Profissionais cadastrados.</p></article>
+                <article class="metric-card"><span>Vagas</span><strong>{{ resumo.vagas }}</strong><p>Vagas criadas na base.</p></article>
+                <article class="metric-card"><span>Candidaturas</span><strong>{{ resumo.candidaturas }}</strong><p>Inscrições feitas pelos vigilantes.</p></article>
+                <article class="metric-card"><span>Suspeitos</span><strong>{{ resumo.cadastros_suspeitos }}</strong><p>Cadastros com alerta preventivo.</p></article>
+                <article class="metric-card"><span>Bloqueados</span><strong>{{ resumo.cadastros_bloqueados }}</strong><p>Cadastros travados por segurança.</p></article>
+            </section>
+
+            <section class="soft-card top-gap" id="secao-recrutadores">
+                <div class="section-title-row">
+                    <div>
+                        <span class="section-kicker">Recrutadores</span>
+                        <h2>Empresas e responsáveis</h2>
+                        <p>Filtre por nome, empresa, status e antifraude. Exporte os dados em planilha XLSX.</p>
+                    </div>
+                    <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_recrutadores', **request.args) }}">Exportar recrutadores</a>
+                </div>
+                <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-recrutadores" class="candidate-form status-form preserve-section-form" data-target-section="secao-recrutadores" style="margin-bottom: 1rem;">
+                    <div class="form-grid two-columns">
+                        <div class="form-group"><label>Status</label><select name="r_status"><option value="" {% if not filtros.r_status %}selected{% endif %}>Todos</option><option value="pendente" {% if filtros.r_status == 'pendente' %}selected{% endif %}>PENDENTE</option><option value="validado" {% if filtros.r_status == 'validado' %}selected{% endif %}>VALIDADO</option><option value="verificado" {% if filtros.r_status == 'verificado' %}selected{% endif %}>VERIFICADO</option></select></div>
+                        <div class="form-group"><label>Antifraude</label><select name="r_antifraude"><option value="" {% if not filtros.r_antifraude %}selected{% endif %}>Todos</option><option value="normal" {% if filtros.r_antifraude == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if filtros.r_antifraude == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if filtros.r_antifraude == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select></div>
+                        <div class="form-group"><label>Nome ou empresa</label><input type="text" name="r_nome_empresa" value="{{ filtros.r_nome_empresa }}"></div>
+                        <div class="form-group"><label>E-mail</label><input type="text" name="r_email" value="{{ filtros.r_email }}"></div>
+                        <div class="form-group" style="display:flex;align-items:end;gap:0.75rem;"><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-secondary" href="{{ url_for('mauricio.dashboard', _anchor='secao-recrutadores') }}">Limpar</a></div>
+                    </div>
+                </form>
+                {% if recrutadores %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Responsável / Empresa</th><th>Contato</th><th>Status</th><th>Antifraude</th><th>Flags</th><th>IP / Data</th><th>Ações</th></tr></thead><tbody>
+                {% for item in recrutadores %}
+                <tr>
+                    <td>{{ item['id'] }}</td>
+                    <td>{{ item['nome_responsavel'] }}<br><small>{{ item['nome_empresa'] or '-' }}</small></td>
+                    <td>{{ item['email'] }}<br><small>{{ item['telefone'] or '-' }}</small></td>
+                    <td><span class="status-pill status-pill-{{ item['status']|replace(' ', '-')|lower }}">{{ item['status'] }}</span><br><small>Email verificado: {{ 'SIM' if item['email_verificado'] else 'NÃO' }}</small></td>
+                    <td><span class="status-pill status-pill-{{ item['antifraude_status']|replace(' ', '-')|lower }}">{{ item['antifraude_status'] }}</span><br><small>Score {{ item['antifraude_score'] or 0 }}</small></td>
+                    <td><small>{{ item['antifraude_flags'] or '-' }}</small></td>
+                    <td><small>{{ item['ip_cadastro'] or '-' }}</small><br><small>{{ item['created_at'] }}</small></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('mauricio.atualizar_status_recrutador', recrutador_id=item['id']) }}" class="candidate-form status-form" style="margin-bottom:.5rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="status"><option value="pendente" {% if item['status']|lower == 'pendente' %}selected{% endif %}>PENDENTE</option><option value="validado" {% if item['status']|lower in ['validado','ativo'] %}selected{% endif %}>VALIDADO</option><option value="verificado" {% if item['status']|lower == 'verificado' %}selected{% endif %}>VERIFICADO</option></select><button class="btn btn-secondary" type="submit">Salvar</button></div></form>
+                        <form method="POST" action="{{ url_for('mauricio.atualizar_antifraude_recrutador', recrutador_id=item['id']) }}" class="candidate-form status-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="antifraude_status"><option value="normal" {% if item['antifraude_status']|lower == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if item['antifraude_status']|lower == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if item['antifraude_status']|lower == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select><button class="btn btn-secondary" type="submit">Salvar</button></div></form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhum recrutador encontrado para os filtros aplicados.</div>{% endif %}
+                {% if recrutadores|length >= limites.r_limit %}<div class="top-gap" style="display:flex;justify-content:center;"><a class="btn btn-secondary" href="{{ next_links.recrutadores }}">Mostrar mais recrutadores</a></div>{% endif %}
+            </section>
+
+            <section class="soft-card top-gap" id="secao-vigilantes">
+                <div class="section-title-row">
+                    <div><span class="section-kicker">Vigilantes</span><h2>Profissionais cadastrados</h2><p>Filtre por nome, cidade, status e antifraude. Exporte uma planilha separada.</p></div>
+                    <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_vigilantes', **request.args) }}">Exportar vigilantes</a>
+                </div>
+                <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-vigilantes" class="candidate-form status-form preserve-section-form" data-target-section="secao-vigilantes" style="margin-bottom: 1rem;">
+                    <div class="form-grid two-columns">
+                        <div class="form-group"><label>Status</label><select name="v_status"><option value="" {% if not filtros.v_status %}selected{% endif %}>Todos</option><option value="ativo" {% if filtros.v_status == 'ativo' %}selected{% endif %}>ATIVO</option><option value="validado" {% if filtros.v_status == 'validado' %}selected{% endif %}>VALIDADO</option></select></div>
+                        <div class="form-group"><label>Antifraude</label><select name="v_antifraude"><option value="" {% if not filtros.v_antifraude %}selected{% endif %}>Todos</option><option value="normal" {% if filtros.v_antifraude == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if filtros.v_antifraude == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if filtros.v_antifraude == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select></div>
+                        <div class="form-group"><label>Nome</label><input type="text" name="v_nome" value="{{ filtros.v_nome }}"></div>
+                        <div class="form-group"><label>Cidade</label><input type="text" name="v_cidade" value="{{ filtros.v_cidade }}"></div>
+                        <div class="form-group" style="display:flex;align-items:end;gap:0.75rem;"><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-secondary" href="{{ url_for('mauricio.dashboard', _anchor='secao-vigilantes') }}">Limpar</a></div>
+                    </div>
+                </form>
+                {% if vigilantes %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Nome</th><th>Contato</th><th>Endereço</th><th>Formação</th><th>Reciclagem</th><th>Status</th><th>Antifraude</th><th>Ação</th></tr></thead><tbody>
+                {% for item in vigilantes %}
+                <tr>
+                    <td>{{ item['id'] }}</td>
+                    <td>{{ item['nome'] }}<br><small>{{ item['cidade'] or '-' }}</small></td>
+                    <td>{{ item['email'] }}<br><small>{{ item['telefone'] }}</small></td>
+                    <td>{{ item['cidade'] or '-' }}{% if item['estado'] %}/{{ item['estado'] }}{% endif %}<br><small>{{ item['cep'] or '-' }} · {{ item['endereco'] or '-' }}</small></td>
+                    <td>{{ item['escolaridade'] or '-' }}<br><small>CFV: {{ item['possui_cfv'] or '-' }}{% if item['instituicao_formacao'] %} · {{ item['instituicao_formacao'] }}{% endif %}</small></td>
+                    <td>{{ item['data_ultima_reciclagem'] or '-' }}<br><small>{{ item['curso_ultima_reciclagem'] or '-' }}</small></td>
+                    <td><span class="status-pill status-pill-{{ item['status']|replace(' ', '-')|lower }}">{{ item['status'] }}</span></td>
+                    <td><span class="status-pill status-pill-{{ item['antifraude_status']|replace(' ', '-')|lower }}">{{ item['antifraude_status'] }}</span><br><small>Score {{ item['antifraude_score'] or 0 }}</small><br><small>{{ item['antifraude_flags'] or '-' }}</small></td>
+                    <td><form method="POST" action="{{ url_for('mauricio.atualizar_antifraude_vigilante', vigilante_id=item['id']) }}" class="candidate-form status-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="antifraude_status"><option value="normal" {% if item['antifraude_status']|lower == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if item['antifraude_status']|lower == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if item['antifraude_status']|lower == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select><button class="btn btn-secondary" type="submit">Salvar</button></div></form></td>
+                </tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhum vigilante encontrado para os filtros aplicados.</div>{% endif %}
+                {% if vigilantes|length >= limites.v_limit %}<div class="top-gap" style="display:flex;justify-content:center;"><a class="btn btn-secondary" href="{{ next_links.vigilantes }}">Mostrar mais vigilantes</a></div>{% endif %}
+            </section>
+
+            <section class="soft-card top-gap" id="secao-vagas">
+                <div class="section-title-row">
+                    <div><span class="section-kicker">Vagas</span><h2>Vagas da plataforma</h2><p>Filtre por empresa, cidade e status. Exporte a planilha geral ou os inscritos por vaga.</p></div>
+                    <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_vagas', **request.args) }}">Exportar vagas</a>
+                </div>
+                <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-vagas" class="candidate-form status-form preserve-section-form" data-target-section="secao-vagas" style="margin-bottom: 1rem;">
+                    <div class="form-grid two-columns">
+                        <div class="form-group"><label>Empresa</label><input type="text" name="g_empresa" value="{{ filtros.g_empresa }}"></div>
+                        <div class="form-group"><label>Cidade</label><input type="text" name="g_cidade" value="{{ filtros.g_cidade }}"></div>
+                        <div class="form-group"><label>Status</label><select name="g_status"><option value="" {% if not filtros.g_status %}selected{% endif %}>Todos</option><option value="ativa" {% if filtros.g_status == 'ativa' %}selected{% endif %}>ATIVA</option><option value="pausada" {% if filtros.g_status == 'pausada' %}selected{% endif %}>PAUSADA</option><option value="encerrada" {% if filtros.g_status == 'encerrada' %}selected{% endif %}>ENCERRADA</option><option value="inativa" {% if filtros.g_status == 'inativa' %}selected{% endif %}>INATIVA</option></select></div>
+                        <div class="form-group" style="display:flex;align-items:end;gap:0.75rem;"><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-secondary" href="{{ url_for('mauricio.dashboard', _anchor='secao-vagas') }}">Limpar</a></div>
+                    </div>
+                </form>
+                {% if vagas %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Título</th><th>Empresa</th><th>Cidade</th><th>Status</th><th>Candidaturas</th><th>Exportação</th></tr></thead><tbody>
+                {% for vaga in vagas %}
+                <tr><td>{{ vaga['id'] }}</td><td>{{ vaga['titulo'] }}</td><td>{{ vaga['empresa'] }}<br><small>{{ vaga['recrutador_empresa'] or '-' }}</small></td><td>{{ vaga['cidade'] }}/{{ vaga['estado'] }}</td><td><span class="status-pill status-pill-{{ vaga['status']|replace(' ', '-')|lower }}">{{ vaga['status'] }}</span></td><td>{{ vaga['total_candidaturas'] }}</td><td><a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_candidaturas_vaga', vaga_id=vaga['id']) }}">Exportar inscritos</a></td></tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhuma vaga encontrada para os filtros aplicados.</div>{% endif %}
+                {% if vagas|length >= limites.g_limit %}<div class="top-gap" style="display:flex;justify-content:center;"><a class="btn btn-secondary" href="{{ next_links.vagas }}">Mostrar mais vagas</a></div>{% endif %}
+            </section>
+
+            <section class="soft-card top-gap" id="secao-candidaturas">
+                <div class="section-title-row">
+                    <div><span class="section-kicker">Candidaturas</span><h2>Inscrições gerais</h2><p>Filtre por nome, empresa, status e cidade. Exporte uma planilha separada dessa categoria.</p></div>
+                    <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_candidaturas', **request.args) }}">Exportar candidaturas</a>
+                </div>
+                <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-candidaturas" class="candidate-form status-form preserve-section-form" data-target-section="secao-candidaturas" style="margin-bottom: 1rem;">
+                    <div class="form-grid two-columns">
+                        <div class="form-group"><label>Status</label><input type="text" name="c_status" value="{{ filtros.c_status }}" placeholder="Recebida, Em análise..."></div>
+                        <div class="form-group"><label>Nome</label><input type="text" name="c_nome" value="{{ filtros.c_nome }}"></div>
+                        <div class="form-group"><label>Empresa</label><input type="text" name="c_empresa" value="{{ filtros.c_empresa }}"></div>
+                        <div class="form-group"><label>Cidade</label><input type="text" name="c_cidade" value="{{ filtros.c_cidade }}"></div>
+                        <div class="form-group" style="display:flex;align-items:end;gap:0.75rem;"><button class="btn btn-secondary" type="submit">Filtrar</button><a class="btn btn-secondary" href="{{ url_for('mauricio.dashboard', _anchor='secao-candidaturas') }}">Limpar</a></div>
+                    </div>
+                </form>
+                {% if candidaturas %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Vigilante</th><th>Vaga</th><th>Cidade</th><th>Status</th><th>Observações</th><th>Data</th></tr></thead><tbody>
+                {% for item in candidaturas %}
+                <tr><td>{{ item['id'] }}</td><td>{{ item['vigilante_nome'] }}<br><small>{{ item['vigilante_email'] }}</small></td><td>{{ item['vaga_titulo'] }}<br><small>{{ item['vaga_empresa'] }}</small></td><td>{{ item['vigilante_cidade'] or item['vaga_cidade'] or '-' }}{% if item['vigilante_estado'] or item['vaga_estado'] %}/{{ item['vigilante_estado'] or item['vaga_estado'] }}{% endif %}</td><td><span class="status-pill">{{ item['status'] }}</span></td><td><small>{{ item['observacoes'] or '-' }}</small></td><td><small>{{ item['created_at'] }}</small></td></tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhuma candidatura encontrada para os filtros aplicados.</div>{% endif %}
+                {% if candidaturas|length >= limites.c_limit %}<div class="top-gap" style="display:flex;justify-content:center;"><a class="btn btn-secondary" href="{{ next_links.candidaturas }}">Mostrar mais candidaturas</a></div>{% endif %}
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.querySelectorAll('.preserve-section-form').forEach((form) => {
+            form.addEventListener('submit', () => {
+                const sectionId = form.dataset.targetSection;
+                if (sectionId) {
+                    sessionStorage.setItem('mauricio_last_section', sectionId);
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            if (window.location.hash) return;
+            const sectionId = sessionStorage.getItem('mauricio_last_section');
+            if (!sectionId) return;
+            const target = document.getElementById(sectionId);
+            if (target) {
+                setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
+            }
+            sessionStorage.removeItem('mauricio_last_section');
+        });
+    </script>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

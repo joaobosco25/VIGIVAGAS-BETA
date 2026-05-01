@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esqueci minha senha | VigiVagas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <main class="login-shell">
+        <section class="login-container">
+            <span class="section-kicker">Recuperação de senha do vigilante</span>
+            <h1>Esqueci minha senha</h1>
+            <p>Informe seu e-mail cadastrado. Enviaremos um link seguro para redefinir a senha.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <form method="post" class="candidate-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group"><label>E-mail</label><input type="email" name="email" required></div>
+                <button class="btn btn-primary full" type="submit">Enviar link de redefinição</button>
+            </form>
+            <p class="form-help"><a href="{{ url_for('vigilante.login') }}">Voltar para o login</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

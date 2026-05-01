@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel dos Recrutadores | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Painel dos Recrutadores</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+
+            <form method="POST" action="{{ url_for('recrutador.logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-secondary" type="submit">Sair</button>
+            </form>
+        </div>
+    
+            <a class="btn btn-secondary" href="{{ url_for('recrutador.meus_dados_json') }}">Exportar meus dados</a>
+            <form method="POST" action="{{ url_for('recrutador.excluir_conta') }}" onsubmit="return confirm('Confirmar anonimização/exclusão da conta? Esta ação não deve ser feita por teste.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger" type="submit">Excluir/anonimizar conta</button>
+            </form>
+
+        </header>
+
+    <main class="panel-shell">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="panel-header-card">
+                <div class="panel-header-top">
+                    <div>
+                        <span class="panel-badge">Área do recrutador</span>
+                        <h1>Operação de vagas e candidatos</h1>
+                        <p>
+                            Bem-vindo, {{ session['recrutador_nome'] }}.
+                            Aqui você publica vagas, acompanha candidaturas e conduz o andamento dos processos.
+                        </p>
+                    </div>
+
+                    <div class="muted-box">
+                        <strong>Empresa vinculada</strong><br>
+                        {{ session.get('recrutador_empresa') or 'Empresa não informada' }} {% if recrutador_status == 'verificado' %}<span class="status-pill status-pill-aprovado">VERIFICADO</span>{% else %}<span class="status-pill status-pill-em-analise">VALIDADO</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="panel-actions">
+                    <a class="btn btn-secondary" href="#publicar-vaga">Publicar nova vaga</a>
+                    <a class="btn btn-secondary" href="#gestao-vagas">Gerenciar vagas</a>
+                    {% if recrutador_status == 'verificado' %}
+                        <a class="btn btn-secondary" href="#perfil-verificado">Perfil público verificado</a>
+                    {% endif %}
+                    <a class="btn btn-secondary" href="{{ url_for('public.index') }}">Ver site público</a>
+                </div>
+            </section>
+
+            <section class="soft-card" style="margin-bottom:22px;">
+                <div class="panel-lead-grid">
+                    <div>
+                        <span class="section-kicker">Rotina de operação</span>
+                        <h2 style="margin-bottom:8px;">Seu painel ficou mais alinhado para uso diário.</h2>
+                        <p>Publique, edite e acompanhe suas vagas com leitura mais limpa em desktop e mobile.</p>
+                    </div>
+                    <div class="quick-grid">
+                        <article class="quick-card"><strong>Publicar</strong><p>Abra novas vagas com as informações essenciais do processo.</p></article>
+                        <article class="quick-card"><strong>Gerenciar</strong><p>Edite, pause ou encerre vagas existentes sem recriar registros.</p></article>
+                        <article class="quick-card"><strong>Acompanhar</strong><p>Veja candidaturas por vaga e avance o funil de seleção.</p></article>
+                    </div>
+                </div>
+            </section>
+
+            <nav class="panel-nav" aria-label="Navegação interna do recrutador">
+                <a href="#indicadores">Indicadores</a>
+                <a href="#publicar-vaga">Nova vaga</a>
+                {% if recrutador_status == 'verificado' %}<a href="#perfil-verificado">Perfil verificado</a>{% endif %}
+                <a href="#gestao-vagas">Vagas publicadas</a>
+            </nav>
+
+            <section class="metric-strip" id="indicadores">
+                <article class="metric-card">
+                    <span>Vagas publicadas</span>
+                    <strong>{{ resumo.vagas_publicadas }}</strong>
+                    <p>Total de vagas registradas pela sua conta.</p>
+                </article>
+
+                <article class="metric-card">
+                    <span>Vagas ativas</span>
+                    <strong>{{ resumo.vagas_ativas }} / {{ limite_vagas_ativas }}</strong>
+                    <p>{% if recrutador_status == 'verificado' %}Perfil verificado com prioridade e limite ampliado.{% else %}Plano validado com limite operacional padrão.{% endif %}</p>
+                </article>
+
+                <article class="metric-card">
+                    <span>Candidaturas</span>
+                    <strong>{{ resumo.candidaturas }}</strong>
+                    <p>Interesses recebidos em todas as suas vagas.</p>
+                </article>
+            </section>
+
+            <div class="panel-grid">
+                <section class="soft-card" id="publicar-vaga">
+                    <div class="section-title-row">
+                        <div>
+                            <span class="section-kicker">Nova publicação</span>
+                            <h2>Publicar vaga</h2>
+                            <p>
+                                Preencha as informações essenciais do processo seletivo. A vaga ativa já aparece no site público.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('recrutador.nova_vaga') }}" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="muted-box" style="margin-bottom: 18px;">
+                            <strong>Capacidade atual:</strong> {{ resumo.vagas_ativas }} de {{ limite_vagas_ativas }} vagas ativas em uso.
+                            {% if recrutador_status == 'verificado' %}
+                                Sua empresa está priorizada nas listagens públicas e pode exibir apresentação institucional.
+                            {% else %}
+                                Recrutadores verificados ganham prioridade visual e limite maior de vagas simultâneas.
+                            {% endif %}
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="titulo">Título da vaga *</label>
+                                <input id="titulo" type="text" name="titulo" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="empresa">Empresa *</label>
+                                <input id="empresa" type="text" name="empresa" value="{{ session.get('recrutador_empresa', '') }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cidade">Cidade *</label>
+                                <input id="cidade" type="text" name="cidade" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="estado">Estado *</label>
+                                <input id="estado" type="text" name="estado" maxlength="2" placeholder="MG" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="escala">Escala</label>
+                                <input id="escala" type="text" name="escala" placeholder="12x36, diurno, noturno...">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="salario">Salário</label>
+                                <input id="salario" type="text" name="salario" placeholder="R$ 2.200,00 + benefícios">
+                            </div>
+
+                            <div class="form-group two-columns-span">
+                                <label for="requisitos">Requisitos</label>
+                                <input id="requisitos" type="text" name="requisitos" placeholder="Reciclagem em dia, CNV, experiência, disponibilidade...">
+                            </div>
+
+                            <div class="form-group two-columns-span">
+                                <label for="contato">Contato do processo</label>
+                                <input id="contato" type="text" name="contato" placeholder="Telefone, e-mail ou orientação do processo">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descricao">Descrição da vaga *</label>
+                            <textarea id="descricao" name="descricao" rows="6" required></textarea>
+                        </div>
+
+                        <button class="btn btn-primary full" type="submit">Publicar vaga</button>
+                    </form>
+                </section>
+
+                <aside class="stack-grid">
+                    <section class="soft-card recruiter-tools">
+                        <div>
+                            <span class="section-kicker">Ritmo da operação</span>
+                            <h3>Como usar melhor o painel</h3>
+                            <p class="subtle">
+                                Mantenha títulos claros, descrição objetiva e acompanhe o status das candidaturas para reduzir ruído no processo.
+                            </p>
+                        </div>
+
+                        <div>
+                            <ul class="info-list">
+                                <li>
+                                    <strong>1. Publique com clareza</strong>
+                                    <span>Defina cidade, escala, salário e requisitos de forma objetiva.</span>
+                                </li>
+                                <li>
+                                    <strong>2. Triagem rápida</strong>
+                                    <span>Abra a vaga e consulte os candidatos por processo.</span>
+                                </li>
+                                <li>
+                                    <strong>3. Atualize o andamento</strong>
+                                    <span>Mova o status para dar previsibilidade ao vigilante.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                                        {% if recrutador_status == 'verificado' %}
+                    <section class="soft-card" id="perfil-verificado">
+                        <span class="section-kicker">Benefício exclusivo</span>
+                        <h3>Perfil público da empresa verificada</h3>
+                        <p class="subtle">Sua empresa pode exibir site corporativo e uma apresentação pública nas vagas e listagens do site.</p>
+                        <form method="POST" action="{{ url_for('recrutador.atualizar_perfil_empresa') }}" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="form-group">
+                                <label for="site_empresa">Site corporativo</label>
+                                <input id="site_empresa" type="text" name="site_empresa" value="{{ recrutador['site_empresa'] or '' }}" placeholder="https://www.suaempresa.com.br">
+                            </div>
+                            <div class="form-group">
+                                <label for="descricao_empresa">Apresentação pública da empresa</label>
+                                <textarea id="descricao_empresa" name="descricao_empresa" rows="5" placeholder="Descreva a empresa, sua operação e o diferencial do ambiente de trabalho.">{{ recrutador['descricao_empresa'] or '' }}</textarea>
+                            </div>
+                            <button class="btn btn-primary full" type="submit">Salvar perfil verificado</button>
+                        </form>
+                    </section>
+                    {% else %}
+                    <section class="soft-card">
+                        <span class="section-kicker">Benefícios do verificado</span>
+                        <h3>O que muda ao virar verificado</h3>
+                        <ul class="info-list">
+                            <li><strong>Selo de confiança</strong><span>As vagas aparecem com destaque de empresa verificada.</span></li>
+                            <li><strong>Prioridade nas listagens</strong><span>As vagas sobem na frente das listagens públicas e do painel dos vigilantes.</span></li>
+                            <li><strong>Limite ampliado</strong><span>Até 15 vagas ativas simultâneas para operação mais robusta.</span></li>
+                            <li><strong>Perfil institucional</strong><span>Site e apresentação pública da empresa nas vagas.</span></li>
+                        </ul>
+                    </section>
+                    {% endif %}
+
+<section class="soft-card">
+                        <span class="section-kicker">Atalho útil</span>
+                        <h3>Fluxo do recrutador</h3>
+                        <div class="legend-row">
+                            <span class="status-pill status-pill-ativa">Vaga ativa</span>
+                            <span class="status-pill status-pill-recebida">Recebida</span>
+                            <span class="status-pill status-pill-em-analise">Em análise</span>
+                            <span class="status-pill status-pill-aprovado">Aprovado</span>
+                        </div>
+                        <p class="subtle" style="margin-top: 14px;">
+                            Sua empresa publica a vaga, recebe candidaturas e acompanha o processo em um só lugar.
+                        </p>
+                    </section>
+                </aside>
+            </div>
+
+            <section class="soft-card top-gap" id="gestao-vagas">
+                <div class="section-title-row">
+                    <div>
+                        <span class="section-kicker">Gestão ativa</span>
+                        <h2>Vagas publicadas</h2>
+                        <p>
+                            Veja o desempenho de cada vaga e acesse rapidamente quem entrou no processo seletivo.
+                        </p>
+                    </div>
+                </div>
+
+                {% if vagas %}
+                    <div class="table-wrap table-compact">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Vaga</th>
+                                    <th>Local</th>
+                                    <th>Status</th>
+                                    <th>Candidaturas</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vaga in vagas %}
+                                    <tr>
+                                        <td>{{ vaga['id'] }}</td>
+                                        <td>
+                                            <strong>{{ vaga['titulo'] }}</strong><br>
+                                            <span class="subtle">{{ vaga['empresa'] }}</span>
+                                            {% if recrutador_status == 'verificado' %}<br><span class="status-pill status-pill-aprovado">EMPRESA VERIFICADA</span>{% endif %}
+                                        </td>
+                                        <td>{{ vaga['cidade'] }} - {{ vaga['estado'] }}</td>
+                                        <td>
+                                            <span class="status-pill status-pill-{{ vaga['status']|replace(' ', '-')|lower }}">
+                                                {{ vaga['status'] }}
+                                            </span>
+                                        </td>
+                                        <td>{{ vaga['total_candidaturas'] }}</td>
+                                        <td>
+                                            <div class="inline-stack">
+                                                <a class="btn btn-secondary" href="{{ url_for('recrutador.editar_vaga', vaga_id=vaga['id']) }}">
+                                                    Editar vaga
+                                                </a>
+                                                <a class="btn btn-secondary" href="{{ url_for('recrutador.candidatos_da_vaga', vaga_id=vaga['id']) }}">
+                                                    Ver candidatos
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        Você ainda não publicou vagas no Painel dos Recrutadores.
+                    </div>
+                {% endif %}
+
+                {% if pode_mostrar_mais_vagas %}
+                    <div class="top-gap" style="display:flex;justify-content:center;">
+                        <a class="btn btn-secondary" href="{{ url_for('recrutador.dashboard', vagas_limit=vagas_limit + 10, _anchor='gestao-vagas') }}">Mostrar mais vagas</a>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

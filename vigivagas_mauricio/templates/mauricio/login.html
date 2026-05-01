@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Maurício | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+<header class="site-header compact-header">
+    <div class="container header-wrap">
+        <a href="{{ url_for('mauricio.login') }}" class="brand with-logo">
+            <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+            <div class="brand-text"><span class="brand-title">VigiVagas</span><span class="brand-subtitle">Área exclusiva do Maurício</span></div>
+        </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+    </div>
+</header>
+<main class="login-shell">
+    <div class="auth-layout">
+        <section class="auth-aside">
+            <span class="hero-tag">Operação central do sistema</span>
+            <h2>Monitore o ecossistema inteiro em um painel mais limpo, responsivo e orientado à operação.</h2>
+            <p>Esta área concentra validação de recrutadores, visão de vigilantes, vagas, candidaturas e sinais de fraude com mais clareza visual.</p>
+            <ul class="auth-checklist">
+                <li><strong>Visão consolidada</strong><span>Recrutadores, vigilantes, vagas e candidaturas no mesmo lugar.</span></li>
+                <li><strong>Controle operacional</strong><span>Filtros, exportações e ajustes administrativos sem poluição desnecessária.</span></li>
+                <li><strong>Uso diário</strong><span>Estrutura pronta para a rotina de análise da beta.</span></li>
+            </ul>
+            <div class="auth-mini-stats">
+                <div class="auth-mini-stat"><strong>1 painel</strong><span>para a operação inteira</span></div>
+                <div class="auth-mini-stat"><strong>+ foco</strong><span>em leitura, filtros e ação</span></div>
+            </div>
+        </section>
+        <section class="login-container">
+            <span class="section-kicker">Acesso reservado</span>
+            <h1>Painel do Maurício</h1>
+            <p>Use este acesso para acompanhar recrutadores, vigilantes, candidaturas e vagas em visão global.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-messages">{% for category, message in messages %}<div class="flash flash-{{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+            <form method="post" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group"><label>Usuário</label><input type="text" name="username" placeholder="mauricio" required></div>
+                <div class="form-group"><label>Senha</label><input type="password" name="password" placeholder="Digite sua senha" required></div>
+                <button class="btn btn-primary full" type="submit">Entrar no painel</button>
+            </form>
+        </section>
+    </div>
+</main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

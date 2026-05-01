@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidato | VigiVagas</title>
+    <meta name="description" content="Cadastro de candidatos para vigilância privada.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+
+<header class="site-header compact-header">
+    <div class="container header-wrap">
+        <a href="{{ url_for('public.index') }}" class="brand" aria-label="Página inicial VigiVagas">
+            <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+            <div class="brand-text">
+                <span class="brand-title">VigiVagas</span>
+                <span class="brand-subtitle">Área do candidato</span>
+            </div>
+        </a>
+<button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        <a class="btn btn-secondary" href="{{ url_for('public.index') }}">Voltar</a>
+    </div>
+</header>
+
+<main class="form-page">
+    <div class="container form-layout">
+        <section class="form-intro-card">
+            <span class="section-kicker">Cadastro profissional</span>
+            <h1>Monte seu perfil para vagas de vigilante</h1>
+            <ul class="feature-list dark-text">
+                <li>Dados pessoais essenciais</li>
+                <li>Informações de formação e reciclagem</li>
+            </ul>
+        </section>
+
+        <section class="form-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+              <div class="flash-messages">
+                {% for category, message in messages %}
+                  <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('public.cadastrar') }}" method="post" class="candidate-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <h2>Cadastro do candidato</h2>
+                <p class="form-help">Campos com * são obrigatórios.</p>
+
+                <div class="form-group">
+                    <label for="nome">Nome completo *</label>
+                    <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cpf">CPF *</label>
+                        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone *</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">E-mail *</label>
+                        <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cidade">Cidade *</label>
+                        <input type="text" id="cidade" name="cidade" placeholder="Uberlândia" autocomplete="address-level2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="estado">Estado (UF) *</label>
+                        <input type="text" id="estado" name="estado" placeholder="MG" maxlength="2" autocomplete="address-level1" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="endereco">Endereço *</label>
+                    <input type="text" id="endereco" name="endereco" placeholder="Rua, número e bairro" autocomplete="street-address" required>
+                    <small class="field-help">Ao informar o CEP, o sistema tenta preencher endereço, cidade e estado automaticamente.</small>
+                    <div id="cep-status" class="cep-status" aria-live="polite">Digite o CEP para preencher endereço, cidade e estado.</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cep">CEP *</label>
+                        <input type="text" id="cep" name="cep" placeholder="00000-000" inputmode="numeric" autocomplete="postal-code" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="curso">Possui curso de vigilante patrimonial? *</label>
+                        <select id="curso" name="curso" required>
+                            <option value="">Selecione</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                            <option value="Em andamento">Em andamento</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reciclagem">Reciclagem em dia? *</label>
+                        <select id="reciclagem" name="reciclagem" required>
+                            <option value="">Selecione</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="area">Área de interesse</label>
+                        <select id="area" name="area">
+                            <option value="">Selecione</option>
+                            <option value="Vigilância Patrimonial">Vigilância Patrimonial</option>
+                            <option value="Escolta Armada">Escolta Armada</option>
+                            <option value="Transporte de Valores">Transporte de Valores</option>
+                            <option value="Grandes Eventos">Grandes Eventos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mensagem">Resumo profissional</label>
+                    <textarea id="mensagem" name="mensagem" rows="5" placeholder="Fale rapidamente sobre sua experiência, cursos e disponibilidade."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="captcha_resposta">CAPTCHA *</label>
+                    <input type="text" id="captcha_resposta" name="captcha_resposta" placeholder="{{ captcha_question }}" required>
+                    <small class="field-help">Responda a conta para provar que o cadastro é real.</small>
+                </div>
+
+                <p class="form-help">Os dados são salvos em maiúsculo, exceto o e-mail. CPF, CEP, telefone, curso e reciclagem são validados antes do envio.</p>
+                    <label class="form-check lgpd-check">
+                        <input type="checkbox" name="aceite_lgpd" value="1" required>
+                        Li e aceito a <a href="{{ url_for('public.privacidade') }}" target="_blank">Política de Privacidade</a> e os <a href="{{ url_for('public.termos') }}" target="_blank">Termos de Uso</a>.
+                    </label>
+
+
+                <button type="submit" class="btn btn-primary full">Enviar cadastro</button>
+            </form>
+        </section>
+    </div>
+</main>
+
+<script src="{{ url_for('static', filename='address-autofill.js') }}"></script>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

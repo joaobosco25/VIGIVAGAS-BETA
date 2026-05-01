@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidatos da Vaga | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('recrutador.dashboard') }}" class="brand">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Painel dos Recrutadores</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+
+            <a class="btn btn-secondary" href="{{ url_for('recrutador.dashboard') }}">Voltar ao painel</a>
+        </div>
+    </header>
+
+    <main class="panel-shell">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="panel-header-card">
+                <span class="panel-badge">Pipeline da vaga</span>
+                <h1>{{ vaga['titulo'] }}</h1>
+                <p class="meta-line">{{ vaga['empresa'] }} · {{ vaga['cidade'] }} - {{ vaga['estado'] }}</p>
+                <div class="panel-actions">
+                    <a class="btn btn-secondary" href="{{ url_for('recrutador.dashboard') }}#gestao-vagas">Ver outras vagas</a>
+                </div>
+            </section>
+
+            {% if candidatos %}
+                <section class="candidate-grid">
+                    {% for candidato in candidatos %}
+                        <article class="candidate-card">
+                            <div class="candidate-card-header">
+                                <div>
+                                    <h2>{{ candidato['nome'] }}</h2>
+                                    <div class="candidate-meta">
+                                        <span><strong>E-mail:</strong> {{ candidato['email'] }}</span>
+                                        <span><strong>Telefone:</strong> {{ candidato['telefone'] }}</span>
+                                        <span><strong>Cidade:</strong> {{ candidato['cidade'] }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="inline-stack">
+                                    <span class="status-pill status-pill-{{ candidato['status']|replace(' ', '-')|lower }}">{{ candidato['status'] }}</span>
+                                    <span class="subtle">Entrada: {{ candidato['created_at'] }}</span>
+                                </div>
+                            </div>
+
+                            <div class="panel-grid">
+                                <section class="soft-card">
+                                    <span class="section-kicker">Resumo do perfil</span>
+                                    <h3>Dados do vigilante</h3>
+
+                                    <ul class="info-list">
+                                        <li>
+                                            <strong>Curso</strong>
+                                            <span>{{ candidato['curso'] or 'Não informado' }}</span>
+                                        </li>
+                                        <li>
+                                            <strong>Reciclagem</strong>
+                                            <span>{{ candidato['reciclagem'] or 'Não informado' }}</span>
+                                        </li>
+                                        <li>
+                                            <strong>Área de interesse</strong>
+                                            <span>{{ candidato['area_interesse'] or 'Não informado' }}</span>
+                                        </li>
+                                        <li>
+                                            <strong>Resumo profissional</strong>
+                                            <span>{{ candidato['resumo_profissional'] or 'Não informado' }}</span>
+                                        </li>
+                                    </ul>
+                                </section>
+
+                                <section class="soft-card">
+                                    <span class="section-kicker">Atualizar processo</span>
+                                    <h3>Mover candidatura</h3>
+
+                                    <form method="POST" action="{{ url_for('recrutador.candidatos_da_vaga', vaga_id=vaga['id']) }}" class="candidate-form status-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="candidatura_id" value="{{ candidato['candidatura_id'] }}">
+
+                                        <div class="form-group">
+                                            <label for="status_{{ candidato['candidatura_id'] }}">Status</label>
+                                            <select id="status_{{ candidato['candidatura_id'] }}" name="status" required>
+                                                {% for opcao in status_opcoes %}
+                                                    <option value="{{ opcao }}" {% if opcao == candidato['status'] %}selected{% endif %}>{{ opcao }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="observacoes_{{ candidato['candidatura_id'] }}">Observações</label>
+                                            <textarea id="observacoes_{{ candidato['candidatura_id'] }}" name="observacoes" rows="4">{{ candidato['observacoes'] or '' }}</textarea>
+                                        </div>
+
+                                        <button class="btn btn-primary full" type="submit">Salvar atualização</button>
+                                    </form>
+                                </section>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% else %}
+                <div class="empty-state">
+                    Ainda não há vigilantes cadastrados nesta vaga.
+                </div>
+            {% endif %}
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>

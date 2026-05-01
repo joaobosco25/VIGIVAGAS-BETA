@@ -1,0 +1,13 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.sqlite3
+*.db
+backup*.sql
+database/outbox/
+outbox/
+.pytest_cache/
+.DS_Store

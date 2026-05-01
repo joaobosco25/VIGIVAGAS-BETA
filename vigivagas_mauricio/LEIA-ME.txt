@@ -1,0 +1,162 @@
+HISTÓRICO DE VERSÕES - VIGIVAGAS
+
+VERSÃO BASE / ETAPA 1
+O que foi adicionado:
+- Painel do Maurício: /mauricio/login e /mauricio/dashboard
+- Cadastro/Login de recrutador: /recrutador/cadastro e /recrutador/login
+- Cadastro/Login de vigilante: /vigilante/cadastro e /vigilante/login
+- Base de candidaturas criada no banco para as próximas etapas
+- Projeto antigo preservado: /admin/* e /candidato continuam funcionando
+
+Objetivo da versão:
+- criar a base estrutural dos perfis sem destruir o fluxo existente
+
+SPRINT 1
+O que foi adicionado:
+- Ajuste da regra de curso de vigilante e reciclagem: campos obrigatórios, sem exigir resposta positiva
+- Recrutador novo gravado como PENDENTE
+- Login do recrutador liberado apenas para VALIDADO e VERIFICADO
+- Painel do Maurício com alteração de status do recrutador
+- Blindagem da candidatura para exigir vigilante autenticado no backend
+
+Objetivo da versão:
+- fechar as brechas mais críticas de cadastro, acesso e candidatura
+
+HOTFIX 1
+O que foi corrigido:
+- Correção da tela de candidatos da vaga
+- Formulário de atualização de candidatura apontando para a rota correta
+- Uso de candidatura_id correto no formulário
+
+Objetivo da versão:
+- eliminar o erro de rota ao atualizar status da candidatura
+
+HOTFIX 2
+O que foi corrigido:
+- Revalidação do status do recrutador no backend a cada acesso a rotas protegidas
+- Publicação de vaga blindada com checagem explícita no backend
+- Sincronização automática da sessão do recrutador com o status real salvo no banco
+
+Objetivo da versão:
+- impedir publicação de vaga por recrutador não liberado, mesmo com sessão antiga ou tentativa forçada de rota
+
+O que ainda NÃO foi feito:
+- CNPJ ativo obrigatório para solicitar cadastro de recrutador
+- Token de validação por e-mail
+- CAPTCHA
+- Exportação XLS/XLSX no painel do Maurício
+- Funcionalidades extras no painel do Maurício
+- Acessibilidade para surdos
+
+
+==============================
+HOTFIX 3 / BLOCO CNPJ RECRUTADOR
+==============================
+O que foi adicionado nesta versão:
+- Campo obrigatório de CNPJ no cadastro do recrutador.
+- Validação estrutural do CNPJ antes de consultar a base externa.
+- Consulta automática do CNPJ pela BrasilAPI.
+- Bloqueio de cadastro para CNPJ inexistente, inválido ou com situação não ativa.
+- Gravação de CNPJ, razão social e situação cadastral na tabela de recrutadores.
+- Exibição de CNPJ e situação cadastral no painel do Maurício.
+
+O que esta versão não fez:
+- Ainda não valida e-mail por token.
+- Ainda não adiciona CAPTCHA.
+- Ainda não cria benefícios extras para recrutador verificado.
+- Ainda não exporta planilhas XLS/XLSX.
+
+Objetivo desta versão:
+- Impedir solicitação de cadastro de recrutador sem empresa real e ativa.
+
+
+==============================
+HOTFIX 4 - CNPJ TESTE LOCAL + TOKEN DE E-MAIL
+==============================
+O que foi adicionado nesta versão:
+- modo de teste controlado para CNPJ quando a consulta externa falhar no ambiente local
+- gravação do modo de validação do CNPJ no cadastro do recrutador
+- token de validação de e-mail para recrutador
+- bloqueio de login do recrutador enquanto o e-mail não for validado
+- rota para validar e-mail por token
+- opção de reenviar token na tela de login do recrutador
+- fallback local sem SMTP: o link de validação fica salvo em arquivo TXT na pasta database/outbox
+- painel do Maurício mostrando situação de validação do e-mail e modo de validação do CNPJ
+
+O que permanece pendente após esta versão:
+- captcha
+- exportação XLS/XLSX
+- acessibilidade para surdos
+- benefícios extras reais para recrutador verificado
+
+Observação operacional:
+- em ambiente local, se a API de CNPJ falhar, o sistema permite prosseguir com situacao_cadastral = VALIDACAO PENDENTE
+- em ambiente sem SMTP configurado, o token de e-mail fica salvo em arquivo TXT para teste local
+
+
+==============================
+HOTFIX 5 - FASE 3 E 4
+==============================
+O que foi adicionado nesta versão:
+- CAPTCHA simples por conta matemática no cadastro público, no cadastro do vigilante e no cadastro do recrutador.
+- Validação do CAPTCHA no backend antes de salvar qualquer cadastro.
+- Filtros no painel do Maurício para vigilantes por status, cidade e nome.
+- Exportação XLSX da base de vigilantes no painel do Maurício.
+- Exportação XLSX dos inscritos por vaga no painel do Maurício.
+- Nova grade no painel do Maurício com vagas e total de candidaturas por vaga.
+- Ajuste da consulta do painel do Maurício para mostrar também modo de validação do CNPJ e situação da validação do e-mail.
+
+O que permanece pendente após esta versão:
+- melhorias adicionais de navegação pós-cadastro e pós-login
+- benefícios extras reais para recrutador verificado
+- acessibilidade para surdos
+
+Objetivo desta versão:
+- reduzir cadastros automáticos e dar ao Maurício capacidade operacional de exportar e analisar a base da plataforma.
+
+
+==============================
+HOTFIX 6 - FASE 5 + ENDURECIMENTO ANTIFRAUDE
+==============================
+O que foi adicionado nesta versão:
+- reforço da robustez de sessão com limpeza de sessões cruzadas ao entrar em outro perfil
+- revalidação do vigilante no backend a cada acesso à área protegida
+- bloqueio automático de acesso para perfis marcados como BLOQUEADO na camada antifraude
+- endurecimento das regras de cadastro para reduzir usuários fantasma e empresas fantasmas
+- bloqueio de nomes claramente falsos, cadastros de teste e e-mails descartáveis
+- exigência de endereço mais completo para vigilantes e candidatos públicos
+- registro de IP e user-agent no cadastro público, vigilante e recrutador
+- score antifraude, flags antifraude e status antifraude salvos no banco
+- marcação automática de perfis SUSPEITOS quando houver sinais de risco como telefone repetido, IP reincidente, agente suspeito e e-mail genérico/descartável
+- bloqueio de duplicidade de CNPJ para recrutadores
+- novos filtros no painel do Maurício para vigilantes e recrutadores por status e antifraude
+- nova visibilidade no painel do Maurício para IP, flags, score e ações de bloqueio/liberação antifraude
+- exportação XLSX de vigilantes ampliada com colunas de antifraude
+- endurecimento das configurações de cookie de sessão (HttpOnly e SameSite)
+
+O que permanece pendente após esta versão:
+- benefícios extras reais para recrutador verificado
+- acessibilidade para surdos
+- refinamento adicional dos filtros do painel do Maurício conforme uso real
+
+Objetivo desta versão:
+- reduzir cadastros fantasmas, melhorar rastreabilidade, endurecer sessão/navegação e dar ao Maurício mais poder de auditoria e bloqueio.
+
+
+==================================================
+VERSÃO: HOTFIX 7 - FASE 6 (RECRUTADOR VERIFICADO)
+==================================================
+O que foi adicionado nesta versão:
+- Benefícios reais para o status VERIFICADO no recrutador.
+- Selo visual de empresa verificada no painel do recrutador, site público e painel do vigilante.
+- Prioridade de ordenação para vagas de empresas verificadas nas listagens públicas e do vigilante.
+- Limite operacional por status: VALIDADO com até 5 vagas ativas e VERIFICADO com até 15 vagas ativas.
+- Perfil público da empresa verificada com site corporativo e apresentação institucional.
+- Exibição do site e da apresentação institucional nas vagas das empresas verificadas.
+
+O que não foi alterado nesta versão:
+- Acessibilidade para surdos ainda pendente para a próxima fase.
+- Arquitetura de publicação separada do painel do Maurício ainda não foi tratada.
+
+Objetivo da versão:
+- Fazer o status VERIFICADO deixar de ser apenas etiqueta e virar vantagem concreta de operação, visibilidade e confiança.

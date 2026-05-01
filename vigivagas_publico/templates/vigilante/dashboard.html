@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Vigilante | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="internal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Área do Vigilante</span>
+                </div>
+            </a>
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+
+            <form method="POST" action="{{ url_for('vigilante.logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-secondary" type="submit">Sair</button>
+            </form>
+        </div>
+    
+            <a class="btn btn-secondary" href="{{ url_for('vigilante.meus_dados_json') }}">Exportar meus dados</a>
+            <form method="POST" action="{{ url_for('vigilante.excluir_conta') }}" onsubmit="return confirm('Confirmar anonimização/exclusão da conta? Esta ação não deve ser feita por teste.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger" type="submit">Excluir/anonimizar conta</button>
+            </form>
+
+        </header>
+
+    <main class="panel-shell">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="panel-header-card">
+                <div class="panel-header-top">
+                    <div>
+                        <span class="panel-badge">Área do vigilante</span>
+                        <h1>Olá, {{ perfil['nome'] }}</h1>
+                        <p>
+                            Aqui você acompanha vagas abertas, envia candidaturas e consulta o andamento de cada processo.
+                        </p>
+                    </div>
+
+                    <div class="muted-box">
+                        <strong>Área de interesse</strong><br>
+                        {{ perfil['area_interesse'] or 'Não informada' }}
+                    </div>
+                </div>
+
+                <div class="panel-actions">
+                    <a class="btn btn-secondary" href="#vagas-disponiveis">Ver vagas</a>
+                    <a class="btn btn-secondary" href="#minhas-candidaturas">Minhas candidaturas</a>
+                    <a class="btn btn-secondary" href="{{ url_for('public.index') }}">Voltar ao site</a>
+                </div>
+            </section>
+
+            <section class="soft-card" style="margin-bottom:22px;">
+                <div class="panel-lead-grid">
+                    <div>
+                        <span class="section-kicker">Sua jornada na plataforma</span>
+                        <h2 style="margin-bottom:8px;">Encontre vagas e acompanhe seus processos com menos fricção.</h2>
+                        <p>O painel foi organizado para facilitar leitura de oportunidades, status e observações do recrutador.</p>
+                    </div>
+                    <div class="quick-grid">
+                        <article class="quick-card"><strong>Perfil visível</strong><p>Mantenha seus dados atualizados para ganhar contexto na triagem.</p></article>
+                        <article class="quick-card"><strong>Vagas com contexto</strong><p>Local, empresa, escala, salário e requisitos em leitura objetiva.</p></article>
+                        <article class="quick-card"><strong>Andamento claro</strong><p>Volte ao painel para entender em que etapa está cada candidatura.</p></article>
+                    </div>
+                </div>
+            </section>
+
+            <nav class="panel-nav" aria-label="Navegação interna do vigilante">
+                <a href="#meu-perfil">Meu perfil</a>
+                <a href="#vagas-disponiveis">Vagas abertas</a>
+                <a href="#minhas-candidaturas">Andamento</a>
+            </nav>
+
+            <section class="metric-strip">
+                <article class="metric-card">
+                    <span>Vagas ativas</span>
+                    <strong>{{ vagas_ativas }}</strong>
+                    <p>Oportunidades abertas para candidatura agora.</p>
+                </article>
+
+                <article class="metric-card">
+                    <span>Suas candidaturas</span>
+                    <strong>{{ candidaturas|length }}</strong>
+                    <p>Processos em que você já demonstrou interesse.</p>
+                </article>
+
+                <article class="metric-card">
+                    <span>Status dominante</span>
+                    <strong>
+                        {% if candidaturas %}
+                            {{ candidaturas[0]['status'] }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </strong>
+                    <p>Visão rápida da candidatura mais recente.</p>
+                </article>
+            </section>
+
+            <div class="panel-grid" id="meu-perfil">
+                <section class="soft-card">
+                    <span class="section-kicker">Dados de acesso</span>
+                    <h2>Seu perfil profissional</h2>
+                    <div class="table-wrap table-compact">
+                        <table class="data-table">
+                            <tbody>
+                                <tr>
+                                    <th>Nome</th>
+                                    <td>{{ perfil['nome'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>E-mail</th>
+                                    <td>{{ perfil['email'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Telefone</th>
+                                    <td>{{ perfil['telefone'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cidade</th>
+                                    <td>{{ perfil['cidade'] }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Curso</th>
+                                    <td>{{ perfil['curso'] or 'Não informado' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Reciclagem</th>
+                                    <td>{{ perfil['reciclagem'] or 'Não informado' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Área de interesse</th>
+                                    <td>{{ perfil['area_interesse'] or 'Não informado' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <aside class="stack-grid">
+                    <section class="soft-card">
+                        <span class="section-kicker">Como usar sua área</span>
+                        <h3>Fluxo recomendado</h3>
+                        <ul class="info-list">
+                            <li>
+                                <strong>1. Mantenha o perfil completo</strong>
+                                <span>Curso, reciclagem e área de interesse ajudam o recrutador na triagem.</span>
+                            </li>
+                            <li>
+                                <strong>2. Candidate-se com critério</strong>
+                                <span>Leia cidade, escala, salário e requisitos antes de avançar.</span>
+                            </li>
+                            <li>
+                                <strong>3. Acompanhe o andamento</strong>
+                                <span>Volte ao painel para ver status e observações do recrutador.</span>
+                            </li>
+                        </ul>
+                    </section>
+                </aside>
+            </div>
+
+            <section class="soft-card top-gap" id="vagas-disponiveis">
+                <div class="section-title-row">
+                    <div>
+                        <span class="section-kicker">Oportunidades abertas</span>
+                        <h2>Vagas disponíveis</h2>
+                        <p>
+                            Escolha a vaga que faz sentido para o seu perfil e registre sua candidatura.
+                        </p>
+                    </div>
+                </div>
+
+                {% if vagas_disponiveis %}
+                    <div class="application-grid">
+                        {% for vaga in vagas_disponiveis %}
+                            <article class="application-card">
+                                <div class="application-card-header">
+                                    <div>
+                                        <h3>{{ vaga['titulo'] }}</h3>
+                                        <div class="application-meta">
+                                            <span><strong>Empresa:</strong> {{ vaga['empresa'] }} {% if vaga['empresa_verificada'] %}<span class="status-pill status-pill-aprovado">VERIFICADA</span>{% endif %}</span>
+                                            <span><strong>Local:</strong> {{ vaga['cidade'] }} - {{ vaga['estado'] }}</span>
+                                            <span><strong>Escala:</strong> {{ vaga['escala'] or 'A combinar' }}</span>
+                                            <span><strong>Salário:</strong> {{ vaga['salario'] or 'Informado no processo' }}</span>
+                                        </div>
+                                    </div>
+
+                                    {% if vaga['ja_candidatado'] %}
+                                        <span class="status-pill status-pill-aprovado">Candidatura enviada</span>
+                                    {% else %}
+                                        <span class="status-pill status-pill-ativa">Vaga ativa</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="muted-box">
+                                    <strong>Requisitos</strong><br>
+                                    {{ vaga['requisitos'] or 'Informados durante o processo' }}
+                                </div>
+
+                                {% if vaga['empresa_verificada'] and (vaga['descricao_empresa'] or vaga['site_empresa']) %}
+                                    <div class="muted-box" style="margin-top: 12px;">
+                                        <strong>Empresa verificada</strong><br>
+                                        {{ vaga['descricao_empresa'] or 'Empresa com cadastro verificado no portal.' }}
+                                        {% if vaga['site_empresa'] %}<br><strong>Site:</strong> <a href="{{ vaga['site_empresa'] }}" target="_blank" rel="noopener noreferrer">{{ vaga['site_empresa'] }}</a>{% endif %}
+                                    </div>
+                                {% endif %}
+
+                                <details class="vacancy-accordion" style="margin-top: 16px;">
+                                    <summary>Descrição da vaga</summary>
+                                    <div class="vacancy-description">
+                                        <p>{{ vaga['descricao'] }}</p>
+                                    </div>
+                                </details>
+
+                                <div class="application-actions">
+                                    {% if vaga['ja_candidatado'] %}
+                                        <span class="subtle">Você já está nesse processo.</span>
+                                    {% else %}
+                                        <form method="POST" action="{{ url_for('vigilante.candidatar', vaga_id=vaga['id']) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button class="btn btn-primary" type="submit">Candidatar-se</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        Ainda não há vagas ativas para candidatura.
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="soft-card top-gap" id="minhas-candidaturas">
+                <div class="section-title-row">
+                    <div>
+                        <span class="section-kicker">Andamento</span>
+                        <h2>Suas candidaturas</h2>
+                        <p>
+                            Consulte a evolução dos seus processos e leia observações registradas pelo recrutador.
+                        </p>
+                    </div>
+                </div>
+
+                {% if candidaturas %}
+                    <div class="application-grid">
+                        {% for item in candidaturas %}
+                            <article class="application-card">
+                                <div class="application-card-header">
+                                    <div>
+                                        <h3>{{ item['titulo'] }}</h3>
+                                        <div class="application-meta">
+                                            <span><strong>Empresa:</strong> {{ item['empresa'] }} {% if item['empresa_verificada'] %}<span class="status-pill status-pill-aprovado">VERIFICADA</span>{% endif %}</span>
+                                            <span><strong>Local:</strong> {{ item['cidade'] }} - {{ item['estado'] }}</span>
+                                            <span><strong>Última atualização:</strong> {{ item['updated_at'] or item['created_at'] }}</span>
+                                        </div>
+                                    </div>
+
+                                    <span class="status-pill status-pill-{{ item['status']|replace(' ', '-')|lower }}">{{ item['status'] }}</span>
+                                </div>
+
+                                <div class="muted-box">
+                                    <strong>Observações do recrutador</strong><br>
+                                    {{ item['observacoes'] or 'Ainda não há observações registradas para esta candidatura.' }}
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        Você ainda não enviou candidaturas.
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
+</body>
+</html>
