@@ -76,6 +76,8 @@
                 <a href="#secao-vigilantes">Vigilantes</a>
                 <a href="#secao-vagas">Vagas</a>
                 <a href="#secao-candidaturas">Candidaturas</a>
+                <a href="#secao-lgpd">LGPD</a>
+                <a href="#secao-auditoria">Auditoria</a>
             </nav>
 
                 <article class="metric-card"><span>Recrutadores</span><strong>{{ resumo.recrutadores }}</strong><p>Empresas cadastradas na plataforma.</p></article>
@@ -211,6 +213,33 @@
                 {% else %}<div class="empty-state">Nenhuma candidatura encontrada para os filtros aplicados.</div>{% endif %}
                 {% if candidaturas|length >= limites.c_limit %}<div class="top-gap" style="display:flex;justify-content:center;"><a class="btn btn-secondary" href="{{ next_links.candidaturas }}">Mostrar mais candidaturas</a></div>{% endif %}
             </section>
+
+            <section class="soft-card top-gap" id="secao-lgpd">
+                <div class="section-title-row">
+                    <div><span class="section-kicker">LGPD</span><h2>Solicitações e consentimentos</h2><p>Registro das solicitações de exclusão/anonimização realizadas pelas áreas logadas.</p></div>
+                </div>
+                {% if lgpd_requests %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Usuário</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>IP</th><th>Data</th></tr></thead><tbody>
+                {% for item in lgpd_requests %}
+                <tr><td>{{ item['id'] }}</td><td>{{ item['user_type'] }} #{{ item['user_id'] or '-' }}</td><td>{{ item['email'] }}</td><td>{{ item['request_type'] }}</td><td><span class="status-pill">{{ item['status'] }}</span></td><td><small>{{ item['ip_address'] or '-' }}</small></td><td><small>{{ item['created_at'] }}</small></td></tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhuma solicitação LGPD registrada até agora.</div>{% endif %}
+            </section>
+
+            <section class="soft-card top-gap" id="secao-auditoria">
+                <div class="section-title-row">
+                    <div><span class="section-kicker">Segurança</span><h2>Logs administrativos</h2><p>Últimas ações sensíveis feitas no painel do Maurício.</p></div>
+                </div>
+                {% if audit_logs %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>Data</th><th>Ator</th><th>Ação</th><th>Entidade</th><th>Detalhes</th><th>IP</th></tr></thead><tbody>
+                {% for item in audit_logs %}
+                <tr><td><small>{{ item['created_at'] }}</small></td><td>{{ item['actor_type'] }} #{{ item['actor_id'] }}</td><td>{{ item['action'] }}</td><td>{{ item['entity_type'] }} #{{ item['entity_id'] }}</td><td><small>{{ item['details'] or '-' }}</small></td><td><small>{{ item['ip_address'] or '-' }}</small></td></tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhum log administrativo registrado até agora.</div>{% endif %}
+            </section>
+
         </div>
     </main>
 

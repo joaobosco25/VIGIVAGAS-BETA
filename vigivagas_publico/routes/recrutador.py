@@ -868,6 +868,13 @@ def meus_dados_json():
 def excluir_conta():
     recrutador_id = session["recrutador_id"]
     conn = get_connection()
+    recrutador = conn.execute("SELECT email FROM recrutadores WHERE id = ?", (recrutador_id,)).fetchone()
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ua = request.headers.get("User-Agent", "")[:500]
+    conn.execute("""
+        INSERT INTO lgpd_requests (user_type, user_id, email, request_type, status, details, ip_address, user_agent)
+        VALUES (?, ?, ?, 'exclusao_anonimizacao', 'concluida', 'Solicitação feita pela área logada do recrutador; vagas desativadas.', ?, ?)
+    """, ("recrutador", recrutador_id, (recrutador["email"] if recrutador else ""), ip, ua))
     conn.execute("UPDATE vagas SET status='inativa' WHERE recrutador_id = ?", (recrutador_id,))
     conn.execute("UPDATE recrutadores SET nome_empresa='EMPRESA ANONIMIZADA', nome_responsavel='RESPONSAVEL ANONIMIZADO', email='anonimizado-' || id || '@vigivagas.local', telefone='', cnpj='', razao_social='', site_empresa='', descricao_empresa='', status='excluido' WHERE id = ?", (recrutador_id,))
     conn.commit(); conn.close()

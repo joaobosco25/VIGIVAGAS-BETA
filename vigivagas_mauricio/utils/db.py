@@ -363,6 +363,24 @@ def init_db():
         """
     )
 
+    cursor.execute(
+        f"""
+        CREATE TABLE IF NOT EXISTS lgpd_requests (
+            id {id_type},
+            user_type TEXT NOT NULL,
+            user_id INTEGER,
+            email TEXT NOT NULL,
+            request_type TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pendente',
+            details TEXT,
+            ip_address TEXT,
+            user_agent TEXT,
+            created_at {timestamp_type},
+            resolved_at TEXT
+        )
+        """
+    )
+
     candidatos_columns = _column_names(cursor, "candidatos", postgres)
     if "ip_cadastro" not in candidatos_columns:
         cursor.execute("ALTER TABLE candidatos ADD COLUMN ip_cadastro TEXT")
@@ -476,6 +494,8 @@ def init_db():
         "CREATE INDEX IF NOT EXISTS idx_password_resets_token_hash ON password_resets (token_hash)",
         "CREATE INDEX IF NOT EXISTS idx_lgpd_consents_user ON lgpd_consents (user_type, user_id)",
         "CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_lgpd_requests_status ON lgpd_requests (status)",
+        "CREATE INDEX IF NOT EXISTS idx_lgpd_requests_email ON lgpd_requests (email)",
     ]
     for sql in index_sql:
         cursor.execute(sql)

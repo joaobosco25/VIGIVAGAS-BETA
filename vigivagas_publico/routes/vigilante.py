@@ -534,6 +534,13 @@ def meus_dados_json():
 def excluir_conta():
     vigilante_id = session["vigilante_id"]
     conn = get_connection()
+    vigilante = conn.execute("SELECT email FROM vigilantes WHERE id = ?", (vigilante_id,)).fetchone()
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ua = request.headers.get("User-Agent", "")[:500]
+    conn.execute("""
+        INSERT INTO lgpd_requests (user_type, user_id, email, request_type, status, details, ip_address, user_agent)
+        VALUES (?, ?, ?, 'exclusao_anonimizacao', 'concluida', 'Solicitação feita pela área logada do vigilante.', ?, ?)
+    """, ("vigilante", vigilante_id, (vigilante["email"] if vigilante else ""), ip, ua))
     conn.execute("UPDATE vigilantes SET nome='USUARIO ANONIMIZADO', cpf='ANONIMIZADO-' || id, telefone='', email='anonimizado-' || id || '@vigivagas.local', endereco='', cep='', resumo_profissional='', ultima_experiencia_profissional='', status='excluido' WHERE id = ?", (vigilante_id,))
     conn.execute("UPDATE candidaturas SET observacoes = COALESCE(observacoes, '') || ' | Conta do vigilante anonimizada por solicitação LGPD.' WHERE vigilante_id = ?", (vigilante_id,))
     conn.commit(); conn.close()
