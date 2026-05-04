@@ -106,4 +106,3 @@ if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG", "0") == "1"
     port = int(os.getenv("PORT", "5001"))
     host = os.getenv("FLASK_HOST", "0.0.0.0")
-    app.run(debug=debug, host=host, port=port)
