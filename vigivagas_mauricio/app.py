@@ -3,8 +3,8 @@ from flask import Flask, redirect, url_for
 from dotenv import load_dotenv
 
 from routes.mauricio import mauricio_bp
-from utils.db import init_db
-from utils.security import init_security, ensure_default_mauricio
+from utils.db import init_db, ensure_default_mauricio
+from utils.security import init_security
 
 
 load_dotenv()
@@ -106,3 +106,4 @@ if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG", "0") == "1"
     port = int(os.getenv("PORT", "5001"))
     host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host=host, port=port, debug=debug)
