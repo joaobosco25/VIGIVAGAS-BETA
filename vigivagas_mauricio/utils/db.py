@@ -290,6 +290,12 @@ def init_db():
             link_candidatura TEXT,
             recrutador_id INTEGER,
             status TEXT NOT NULL DEFAULT 'ativa',
+            encerrada_em TEXT,
+            encerrada_motivo_tipo TEXT,
+            encerrada_motivo TEXT,
+            vigivagas_ajudou_contratacao TEXT,
+            contratacoes_quantidade INTEGER DEFAULT 0,
+            encerrada_observacoes TEXT,
             created_at {timestamp_type},
             FOREIGN KEY (recrutador_id) REFERENCES recrutadores (id)
         )
@@ -472,6 +478,18 @@ def init_db():
     vagas_columns = _column_names(cursor, "vagas", postgres)
     if "recrutador_id" not in vagas_columns:
         cursor.execute("ALTER TABLE vagas ADD COLUMN recrutador_id INTEGER")
+    if "encerrada_em" not in vagas_columns:
+        cursor.execute("ALTER TABLE vagas ADD COLUMN encerrada_em TEXT")
+    if "encerrada_motivo_tipo" not in vagas_columns:
+        cursor.execute("ALTER TABLE vagas ADD COLUMN encerrada_motivo_tipo TEXT")
+    if "encerrada_motivo" not in vagas_columns:
+        cursor.execute("ALTER TABLE vagas ADD COLUMN encerrada_motivo TEXT")
+    if "vigivagas_ajudou_contratacao" not in vagas_columns:
+        cursor.execute("ALTER TABLE vagas ADD COLUMN vigivagas_ajudou_contratacao TEXT")
+    if "contratacoes_quantidade" not in vagas_columns:
+        cursor.execute("ALTER TABLE vagas ADD COLUMN contratacoes_quantidade INTEGER DEFAULT 0")
+    if "encerrada_observacoes" not in vagas_columns:
+        cursor.execute("ALTER TABLE vagas ADD COLUMN encerrada_observacoes TEXT")
 
     cursor.execute("UPDATE recrutadores SET status = 'validado' WHERE LOWER(status) = 'ativo'")
 

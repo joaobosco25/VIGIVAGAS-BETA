@@ -217,12 +217,12 @@
                             </div>
                         </div>
                         <div class="form-grid two-columns form-grid-balanced">
-                            <div class="form-group">
+                            <div class="form-group" id="reciclagem-data-wrapper">
                                 <label for="data_ultima_reciclagem">13 - Data da última reciclagem *</label>
                                 <input type="date" id="data_ultima_reciclagem" name="data_ultima_reciclagem" required>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" id="reciclagem-curso-wrapper">
                                 <label for="curso_ultima_reciclagem">14 - Curso da última reciclagem *</label>
                                 <select id="curso_ultima_reciclagem" name="curso_ultima_reciclagem" required>
                                     <option value="">Selecione</option>
@@ -288,12 +288,25 @@
         const possuiCfv = document.getElementById('possui_cfv');
         const instituicaoWrapper = document.getElementById('instituicao-wrapper');
         const instituicaoInput = document.getElementById('instituicao_formacao');
+        const reciclagemDataWrapper = document.getElementById('reciclagem-data-wrapper');
+        const reciclagemCursoWrapper = document.getElementById('reciclagem-curso-wrapper');
+        const reciclagemDataInput = document.getElementById('data_ultima_reciclagem');
+        const reciclagemCursoInput = document.getElementById('curso_ultima_reciclagem');
 
         function toggleInstituicao() {
             const show = possuiCfv.value === 'SIM';
             instituicaoWrapper.style.display = show ? 'block' : 'none';
             instituicaoInput.required = show;
             if (!show) instituicaoInput.value = '';
+
+            reciclagemDataWrapper.style.display = show ? 'block' : 'none';
+            reciclagemCursoWrapper.style.display = show ? 'block' : 'none';
+            reciclagemDataInput.required = show;
+            reciclagemCursoInput.required = show;
+            if (!show) {
+                reciclagemDataInput.value = '';
+                reciclagemCursoInput.value = '';
+            }
         }
 
         possuiCfv.addEventListener('change', toggleInstituicao);

@@ -541,12 +541,15 @@ def dashboard():
             v.cidade,
             v.estado,
             v.status,
+            v.encerrada_em,
+            v.encerrada_motivo_tipo,
+            v.vigivagas_ajudou_contratacao,
             v.created_at,
             COUNT(c.id) AS total_candidaturas
         FROM vagas v
         LEFT JOIN candidaturas c ON c.vaga_id = v.id
         WHERE v.recrutador_id = ?
-        GROUP BY v.id, v.titulo, v.empresa, v.cidade, v.estado, v.status, v.created_at
+        GROUP BY v.id, v.titulo, v.empresa, v.cidade, v.estado, v.status, v.encerrada_em, v.encerrada_motivo_tipo, v.vigivagas_ajudou_contratacao, v.created_at
         ORDER BY v.id DESC
         LIMIT ?
         """,
@@ -736,6 +739,80 @@ def editar_vaga(vaga_id: int):
         vaga=vaga,
         recrutador_status=recrutador_status,
     )
+
+
+@recrutador_bp.route("/vaga/<int:vaga_id>/encerrar", methods=["POST"])
+@recrutador_required
+def encerrar_vaga(vaga_id: int):
+    recrutador_id = session["recrutador_id"]
+    motivo_tipo = (request.form.get("motivo_tipo", "") or "").strip()
+    motivo_texto = normalize_textarea_upper(request.form.get("motivo_texto", ""))
+    ajudou = (request.form.get("vigivagas_ajudou_contratacao", "") or "").strip().lower()
+    observacoes = normalize_textarea_upper(request.form.get("encerrada_observacoes", ""))
+    try:
+        contratacoes_quantidade = int(request.form.get("contratacoes_quantidade", "0") or 0)
+    except ValueError:
+        contratacoes_quantidade = 0
+    contratacoes_quantidade = max(0, min(contratacoes_quantidade, 999))
+
+    motivos_validos = {"processo_finalizado", "cancelada", "duplicada", "preenchida_fora", "outro"}
+    if motivo_tipo not in motivos_validos:
+        flash("Selecione um motivo válido para encerrar a vaga.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="gestao-vagas"))
+    if ajudou not in {"sim", "nao", "nao_informado"}:
+        flash("Informe se o VigiVagas ajudou na contratação.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="gestao-vagas"))
+    if motivo_tipo == "outro" and len(motivo_texto) < 10:
+        flash("Descreva o motivo da exclusão/encerramento com pelo menos 10 caracteres.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="gestao-vagas"))
+
+    conn = get_connection()
+    vaga = conn.execute(
+        "SELECT id, titulo, status FROM vagas WHERE id = ? AND recrutador_id = ?",
+        (vaga_id, recrutador_id),
+    ).fetchone()
+    if not vaga:
+        conn.close()
+        flash("Vaga não encontrada para este recrutador.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="gestao-vagas"))
+
+    motivo_legivel = {
+        "processo_finalizado": "Processo seletivo finalizado",
+        "cancelada": "Vaga cancelada",
+        "duplicada": "Vaga duplicada",
+        "preenchida_fora": "Vaga preenchida fora do VigiVagas",
+        "outro": "Outro motivo",
+    }[motivo_tipo]
+
+    conn.execute(
+        """
+        UPDATE vagas
+           SET status = 'encerrada',
+               encerrada_em = ?,
+               encerrada_motivo_tipo = ?,
+               encerrada_motivo = ?,
+               vigivagas_ajudou_contratacao = ?,
+               contratacoes_quantidade = ?,
+               encerrada_observacoes = ?
+         WHERE id = ?
+           AND recrutador_id = ?
+        """,
+        (
+            datetime.utcnow().isoformat(),
+            motivo_tipo,
+            motivo_texto or motivo_legivel,
+            ajudou,
+            contratacoes_quantidade,
+            observacoes,
+            vaga_id,
+            recrutador_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Vaga encerrada com sucesso. O histórico ficará disponível para o painel do Maurício.", "success")
+    return redirect(url_for("recrutador.dashboard", _anchor="gestao-vagas"))
 
 
 @recrutador_bp.route("/perfil-empresa", methods=["POST"])

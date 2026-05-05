@@ -315,6 +315,44 @@
                                                     Ver candidatos
                                                 </a>
                                             </div>
+                                            {% if vaga['status'] != 'encerrada' %}
+                                            <details class="close-job-box">
+                                                <summary>Excluir/encerrar vaga</summary>
+                                                <form method="POST" action="{{ url_for('recrutador.encerrar_vaga', vaga_id=vaga['id']) }}" class="candidate-form close-job-form" onsubmit="return confirm('Confirmar encerramento desta vaga? Ela sairá das vagas ativas, mas ficará registrada no painel do Maurício.');">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <div class="form-group">
+                                                        <label>Motivo</label>
+                                                        <select name="motivo_tipo" required>
+                                                            <option value="processo_finalizado">Processo Seletivo Finalizado</option>
+                                                            <option value="cancelada">Vaga cancelada</option>
+                                                            <option value="duplicada">Vaga duplicada</option>
+                                                            <option value="preenchida_fora">Contratação fora do VigiVagas</option>
+                                                            <option value="outro">Outro motivo</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>O VigiVagas ajudou na contratação?</label>
+                                                        <select name="vigivagas_ajudou_contratacao" required>
+                                                            <option value="nao_informado">Não desejo informar</option>
+                                                            <option value="sim">Sim</option>
+                                                            <option value="nao">Não</option>
+                                                        </select>
+                                                        <small class="field-help">Resposta operacional do processo, sem exigir dados pessoais do contratado.</small>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Quantidade de contratações</label>
+                                                        <input type="number" min="0" max="999" name="contratacoes_quantidade" value="0">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Motivo/observações</label>
+                                                        <textarea name="motivo_texto" rows="3" placeholder="Ex.: processo finalizado, vaga preenchida, mudança interna..."></textarea>
+                                                    </div>
+                                                    <button class="btn btn-danger full" type="submit">Confirmar encerramento</button>
+                                                </form>
+                                            </details>
+                                            {% else %}
+                                                <div class="closed-job-note">Encerrada em {{ vaga['encerrada_em'] or '-' }}<br>Ajuda VigiVagas: {{ vaga['vigivagas_ajudou_contratacao'] or 'não informado' }}</div>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}

@@ -191,6 +191,25 @@ def _fetch_dashboard_data(args):
     candidaturas_query += " ORDER BY c.id DESC LIMIT ?"
     candidaturas = conn.execute(candidaturas_query, [*params_c, c_limit]).fetchall()
 
+    oportunidades_encerradas = conn.execute("""
+        SELECT v.id, v.titulo, v.empresa, v.cidade, v.estado, v.status, v.encerrada_em,
+               v.encerrada_motivo_tipo, v.encerrada_motivo, v.vigivagas_ajudou_contratacao,
+               v.contratacoes_quantidade, v.encerrada_observacoes, v.created_at,
+               COALESCE(r.nome_empresa, v.empresa) AS recrutador_empresa,
+               r.nome_responsavel, r.email AS recrutador_email,
+               COUNT(c.id) AS total_candidaturas
+        FROM vagas v
+        LEFT JOIN recrutadores r ON r.id = v.recrutador_id
+        LEFT JOIN candidaturas c ON c.vaga_id = v.id
+        WHERE v.status = 'encerrada'
+        GROUP BY v.id, v.titulo, v.empresa, v.cidade, v.estado, v.status, v.encerrada_em,
+                 v.encerrada_motivo_tipo, v.encerrada_motivo, v.vigivagas_ajudou_contratacao,
+                 v.contratacoes_quantidade, v.encerrada_observacoes, v.created_at,
+                 r.nome_empresa, r.nome_responsavel, r.email
+        ORDER BY COALESCE(v.encerrada_em, v.created_at) DESC
+        LIMIT 50
+    """).fetchall()
+
     audit_logs = conn.execute("""
         SELECT actor_type, actor_id, action, entity_type, entity_id, details, ip_address, created_at
         FROM audit_logs
@@ -223,7 +242,7 @@ def _fetch_dashboard_data(args):
         "c_cidade": filtro_c_cidade,
     }
     limites = {"r_limit": r_limit, "v_limit": v_limit, "g_limit": g_limit, "c_limit": c_limit}
-    return resumo, recrutadores, vigilantes, vagas, candidaturas, filtros, limites, audit_logs, lgpd_requests
+    return resumo, recrutadores, vigilantes, vagas, candidaturas, filtros, limites, audit_logs, lgpd_requests, oportunidades_encerradas
 
 
 @mauricio_bp.route("/")
@@ -253,7 +272,7 @@ def login():
 @mauricio_bp.route("/dashboard")
 @mauricio_required
 def dashboard():
-    resumo, recrutadores, vigilantes, vagas, candidaturas, filtros, limites, audit_logs, lgpd_requests = _fetch_dashboard_data(request.args)
+    resumo, recrutadores, vigilantes, vagas, candidaturas, filtros, limites, audit_logs, lgpd_requests, oportunidades_encerradas = _fetch_dashboard_data(request.args)
     next_links = {
         "recrutadores": _build_next_link(request.args, "r_limit", 10, "secao-recrutadores"),
         "vigilantes": _build_next_link(request.args, "v_limit", 10, "secao-vigilantes"),
@@ -272,13 +291,14 @@ def dashboard():
         next_links=next_links,
         audit_logs=audit_logs,
         lgpd_requests=lgpd_requests,
+        oportunidades_encerradas=oportunidades_encerradas,
     )
 
 
 @mauricio_bp.route("/exportar/recrutadores.xlsx")
 @mauricio_required
 def exportar_recrutadores():
-    _, recrutadores, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
+    _, recrutadores, _, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
     rows = [[r["id"], r["nome_responsavel"], r["nome_empresa"], r["email"], r["telefone"], r["cidade"], r["estado"], r["cnpj"], r["razao_social"], r["situacao_cadastral"], r["email_verificado"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["ip_cadastro"], r["created_at"]] for r in recrutadores]
     output = _build_workbook("Recrutadores", ["ID", "Responsável", "Empresa", "E-mail", "Telefone", "Cidade", "Estado", "CNPJ", "Razão Social", "Situação Cadastral", "E-mail Verificado", "Status", "Antifraude", "Score", "Flags", "IP Cadastro", "Criado em"], rows)
     return send_file(output, as_attachment=True, download_name="vigivagas_recrutadores.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -287,7 +307,7 @@ def exportar_recrutadores():
 @mauricio_bp.route("/exportar/vigilantes.xlsx")
 @mauricio_required
 def exportar_vigilantes():
-    _, _, vigilantes, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
+    _, _, vigilantes, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
     rows = [[r["id"], r["nome"], r["cidade"], r["estado"], r["cep"], r["endereco"], r["email"], r["telefone"], r["escolaridade"], r["possui_cfv"], r["instituicao_formacao"], r["data_ultima_reciclagem"], r["curso_ultima_reciclagem"], r["ultima_experiencia_profissional"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["ip_cadastro"], r["created_at"]] for r in vigilantes]
     output = _build_workbook("Vigilantes", ["ID", "Nome", "Cidade", "Estado", "CEP", "Endereço", "E-mail", "Telefone", "Escolaridade", "Possui CFV", "Instituição de Formação", "Data Última Reciclagem", "Curso Última Reciclagem", "Última Experiência", "Status", "Antifraude", "Score", "Flags", "IP Cadastro", "Criado em"], rows)
     return send_file(output, as_attachment=True, download_name="vigivagas_vigilantes.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -296,7 +316,7 @@ def exportar_vigilantes():
 @mauricio_bp.route("/exportar/vagas.xlsx")
 @mauricio_required
 def exportar_vagas():
-    _, _, _, vagas, _, _, _, _, _ = _fetch_dashboard_data(request.args)
+    _, _, _, vagas, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
     rows = [[r["id"], r["titulo"], r["empresa"], r["recrutador_empresa"], r["cidade"], r["estado"], r["status"], r["total_candidaturas"], r["created_at"]] for r in vagas]
     output = _build_workbook("Vagas", ["ID", "Título", "Empresa", "Empresa do Recrutador", "Cidade", "Estado", "Status", "Total de Candidaturas", "Criado em"], rows)
     return send_file(output, as_attachment=True, download_name="vigivagas_vagas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -305,7 +325,7 @@ def exportar_vagas():
 @mauricio_bp.route("/exportar/candidaturas.xlsx")
 @mauricio_required
 def exportar_candidaturas():
-    _, _, _, _, candidaturas, _, _, _, _ = _fetch_dashboard_data(request.args)
+    _, _, _, _, candidaturas, _, _, _, _, _ = _fetch_dashboard_data(request.args)
     rows = [[r["id"], r["vigilante_nome"], r["vigilante_email"], r["vigilante_telefone"], r["vigilante_cidade"], r["vigilante_estado"], r["vaga_id"], r["vaga_titulo"], r["vaga_empresa"], r["vaga_cidade"], r["vaga_estado"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
     output = _build_workbook("Candidaturas", ["ID", "Vigilante", "E-mail", "Telefone", "Cidade Vigilante", "Estado Vigilante", "Vaga ID", "Título da Vaga", "Empresa", "Cidade da Vaga", "Estado da Vaga", "Status", "Observações", "Criado em", "Atualizado em"], rows)
     return send_file(output, as_attachment=True, download_name="vigivagas_candidaturas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

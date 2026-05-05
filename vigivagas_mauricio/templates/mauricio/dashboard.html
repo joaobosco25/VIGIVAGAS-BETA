@@ -76,6 +76,7 @@
                 <a href="#secao-vigilantes">Vigilantes</a>
                 <a href="#secao-vagas">Vagas</a>
                 <a href="#secao-candidaturas">Candidaturas</a>
+                <a href="#secao-oportunidades-encerradas">Oportunidades Encerradas</a>
                 <a href="#secao-lgpd">LGPD</a>
                 <a href="#secao-auditoria">Auditoria</a>
             </nav>
@@ -188,6 +189,29 @@
                 </tbody></table></div>
                 {% else %}<div class="empty-state">Nenhuma vaga encontrada para os filtros aplicados.</div>{% endif %}
                 {% if vagas|length >= limites.g_limit %}<div class="top-gap" style="display:flex;justify-content:center;"><a class="btn btn-secondary" href="{{ next_links.vagas }}">Mostrar mais vagas</a></div>{% endif %}
+            </section>
+
+
+            <section class="soft-card top-gap" id="secao-oportunidades-encerradas">
+                <div class="section-title-row">
+                    <div><span class="section-kicker">Oportunidades Encerradas</span><h2>Processos finalizados pelos recrutadores</h2><p>Histórico de vagas encerradas, motivo informado e se o VigiVagas ajudou na contratação. Não exige nome do contratado, reduzindo exposição de dados pessoais.</p></div>
+                </div>
+                {% if oportunidades_encerradas %}
+                <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Vaga</th><th>Empresa/Recrutador</th><th>Cidade</th><th>Motivo</th><th>Ajuda VigiVagas</th><th>Contratações</th><th>Encerrada em</th></tr></thead><tbody>
+                {% for item in oportunidades_encerradas %}
+                <tr>
+                    <td>{{ item['id'] }}</td>
+                    <td><strong>{{ item['titulo'] }}</strong><br><small>Criada em {{ item['created_at'] }}</small></td>
+                    <td>{{ item['empresa'] }}<br><small>{{ item['nome_responsavel'] or '-' }} · {{ item['recrutador_email'] or '-' }}</small></td>
+                    <td>{{ item['cidade'] }}/{{ item['estado'] }}</td>
+                    <td><span class="status-pill status-pill-encerrada">{{ item['encerrada_motivo_tipo'] or 'encerrada' }}</span><br><small>{{ item['encerrada_motivo'] or item['encerrada_observacoes'] or '-' }}</small></td>
+                    <td>{{ item['vigivagas_ajudou_contratacao'] or 'não informado' }}</td>
+                    <td>{{ item['contratacoes_quantidade'] or 0 }}<br><small>{{ item['total_candidaturas'] }} candidatura(s)</small></td>
+                    <td><small>{{ item['encerrada_em'] or '-' }}</small></td>
+                </tr>
+                {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="empty-state">Nenhuma oportunidade encerrada registrada até agora.</div>{% endif %}
             </section>
 
             <section class="soft-card top-gap" id="secao-candidaturas">
