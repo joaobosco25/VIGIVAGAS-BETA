@@ -206,7 +206,7 @@ def _fetch_dashboard_data(args):
                  v.encerrada_motivo_tipo, v.encerrada_motivo, v.vigivagas_ajudou_contratacao,
                  v.contratacoes_quantidade, v.encerrada_observacoes, v.created_at,
                  r.nome_empresa, r.nome_responsavel, r.email
-        ORDER BY COALESCE(v.encerrada_em, v.created_at) DESC
+        ORDER BY CASE WHEN v.encerrada_em IS NULL THEN 1 ELSE 0 END, v.encerrada_em DESC, v.created_at DESC
         LIMIT 50
     """).fetchall()
 

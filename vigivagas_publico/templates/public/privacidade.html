@@ -4,41 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Política de Privacidade | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-<main class="page-shell">
-    <section class="section-card legal-card">
-        <span class="section-kicker">LGPD · Versão 1.1</span>
-        <h1>Política de Privacidade</h1>
-        <p>O VigiVagas trata dados pessoais apenas para viabilizar cadastros profissionais, divulgação de vagas, candidaturas, validação de recrutadores, prevenção contra fraude, comunicação operacional e cumprimento de obrigações legais.</p>
+<body class="legal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Privacidade e proteção de dados</span>
+                </div>
+            </a>
+            <a class="btn btn-secondary" href="{{ url_for('public.index') }}">Voltar ao site</a>
+        </div>
+    </header>
 
-        <h2>Dados tratados</h2>
-        <p>Podemos tratar nome, CPF, CNPJ, telefone, e-mail, cidade, estado, endereço, CEP, dados profissionais, dados da empresa, IP, navegador, data de cadastro, registros de consentimento, logs administrativos e histórico de candidaturas.</p>
+    <main class="page-shell legal-shell">
+        <section class="section-card legal-card legal-document">
+            <div class="legal-hero">
+                <span class="section-kicker">LGPD · Política de Privacidade · Versão 2.0</span>
+                <h1>Política de Privacidade do VigiVagas</h1>
+                <p>Esta Política explica, de forma clara, como o VigiVagas coleta, utiliza, armazena, protege e compartilha dados pessoais de vigilantes, candidatos, recrutadores e usuários administrativos.</p>
+                <p class="legal-note"><strong>Última atualização:</strong> 05/05/2026. Este documento deve ser revisado periodicamente e adequado com dados oficiais da empresa responsável, canal de contato e eventual encarregado/DPO.</p>
+            </div>
 
-        <h2>Finalidades</h2>
-        <p>Usamos esses dados para identificar usuários, permitir login, recuperar senha, validar recrutadores, publicar vagas, registrar candidaturas, gerar relatórios internos, prevenir fraude e atender solicitações previstas na LGPD.</p>
+            <div class="legal-grid-summary">
+                <article><strong>Finalidade</strong><span>operar cadastros, vagas, candidaturas, segurança, auditoria e comunicação operacional.</span></article>
+                <article><strong>Base de proteção</strong><span>LGPD, consentimento, execução de contrato, legítimo interesse e obrigações legais aplicáveis.</span></article>
+                <article><strong>Compromisso</strong><span>não vendemos dados pessoais e adotamos medidas para reduzir acesso indevido.</span></article>
+            </div>
 
-        <h2>Consentimento e registro</h2>
-        <p>Ao criar cadastro, o sistema salva o aceite dos Termos de Uso e desta Política, incluindo data, IP e navegador. Esse registro protege o usuário e a operação da plataforma.</p>
+            <h2>1. Quem somos e escopo desta Política</h2>
+            <p>O VigiVagas é uma plataforma digital voltada à conexão entre profissionais de segurança privada e empresas ou recrutadores que divulgam oportunidades. Esta Política se aplica ao uso do site, áreas logadas, formulários, painéis administrativos, comunicações operacionais e registros de segurança da plataforma.</p>
 
-        <h2>Compartilhamento</h2>
-        <p>Dados de candidatura podem ser visualizados pelo recrutador responsável pela vaga e pelo painel administrativo. O VigiVagas não vende dados pessoais.</p>
+            <h2>2. Dados pessoais que podemos tratar</h2>
+            <p>Dependendo do perfil de uso, podemos tratar os seguintes dados:</p>
+            <ul>
+                <li><strong>Vigilantes e candidatos:</strong> nome, CPF, telefone, e-mail, senha criptografada/hash, cidade, estado, CEP, endereço, escolaridade, formação, extensões, reciclagem, experiência profissional, candidaturas e interações com vagas.</li>
+                <li><strong>Recrutadores:</strong> nome da empresa, responsável, e-mail, telefone, CNPJ, razão social, site, descrição da empresa, validações cadastrais e histórico de vagas.</li>
+                <li><strong>Dados técnicos e de segurança:</strong> IP, data e hora de acesso, navegador, dispositivo, logs de auditoria, tentativas de login, registros antifraude, consentimentos e solicitações LGPD.</li>
+            </ul>
 
-        <h2>Segurança</h2>
-        <p>Senhas são armazenadas com hash, sessões usam cookies protegidos, rotas sensíveis exigem autenticação e ações administrativas relevantes são registradas em logs.</p>
+            <h2>3. Finalidades do tratamento</h2>
+            <p>Os dados são tratados para:</p>
+            <ul>
+                <li>criar, autenticar e proteger contas de usuários;</li>
+                <li>permitir cadastro, publicação, consulta e candidatura em vagas;</li>
+                <li>permitir que recrutadores visualizem candidatos vinculados às suas vagas;</li>
+                <li>permitir gestão administrativa, auditoria, suporte, exportações e relatórios internos;</li>
+                <li>prevenir fraudes, cadastros falsos, uso indevido e acessos não autorizados;</li>
+                <li>registrar consentimentos, preferências e solicitações relacionadas à LGPD;</li>
+                <li>cumprir obrigações legais, regulatórias e exercício regular de direitos.</li>
+            </ul>
 
-        <h2>Direitos do titular</h2>
-        <p>Você pode solicitar acesso, correção, portabilidade, anonimização ou exclusão dos seus dados. Usuários logados podem baixar seus dados em JSON e solicitar anonimização pela própria área logada.</p>
+            <h2>4. Compartilhamento de dados</h2>
+            <p>Dados de vigilantes candidatos a uma vaga podem ser visualizados pelo recrutador responsável pela oportunidade e pelo painel administrativo autorizado. Dados de recrutadores e vagas podem ser visualizados pelo administrador para validação, suporte e segurança. O VigiVagas não comercializa dados pessoais.</p>
 
-        <h2>Retenção</h2>
-        <p>Dados podem ser mantidos enquanto a conta estiver ativa ou pelo período necessário para segurança, auditoria, prevenção a fraude, obrigações legais ou defesa de direitos.</p>
+            <h2>5. Cookies e tecnologias semelhantes</h2>
+            <p>Usamos cookies necessários para funcionamento da sessão, autenticação, segurança e preferências essenciais da plataforma. Também podemos utilizar cookies de melhoria de experiência ou métricas internas quando configurados. O usuário pode aceitar ou recusar cookies não essenciais pelo aviso exibido no primeiro acesso. Cookies estritamente necessários podem continuar ativos porque permitem login, segurança e operação básica do site.</p>
 
-        <h2>Contato LGPD</h2>
-        <p>Use a área logada para baixar ou solicitar anonimização dos seus dados. Quando houver e-mail profissional definido, ele deverá ser informado nesta página como canal oficial de atendimento LGPD.</p>
+            <h2>6. Segurança da informação</h2>
+            <p>Adotamos medidas técnicas e administrativas compatíveis com o porte e estágio da plataforma, incluindo senhas armazenadas com hash, controle de sessão, separação de áreas logadas, variáveis de ambiente para segredos, validação de formulários, logs de auditoria e restrição de acesso administrativo.</p>
 
-        <p><a class="btn" href="{{ url_for('public.index') }}">Voltar ao início</a></p>
-    </section>
-</main>
+            <h2>7. Retenção e exclusão</h2>
+            <p>Os dados podem ser mantidos enquanto a conta estiver ativa, enquanto houver relação com vaga/candidatura, ou pelo tempo necessário para segurança, auditoria, prevenção a fraudes, cumprimento de obrigações legais e defesa de direitos. Solicitações de exclusão, anonimização ou correção serão avaliadas conforme a LGPD e a necessidade de preservação de registros mínimos.</p>
+
+            <h2>8. Direitos do titular</h2>
+            <p>Nos termos da LGPD, o titular pode solicitar confirmação de tratamento, acesso, correção, anonimização, bloqueio, eliminação, portabilidade, informação sobre compartilhamento, revogação de consentimento e revisão de decisões automatizadas quando aplicável.</p>
+
+            <h2>9. Responsabilidades do usuário</h2>
+            <p>O usuário deve fornecer informações verdadeiras, manter seus dados atualizados, preservar sua senha, não compartilhar acesso e não cadastrar dados de terceiros sem autorização. Informações falsas ou uso indevido podem gerar bloqueio e registro administrativo.</p>
+
+            <h2>10. Contato e solicitações LGPD</h2>
+            <p>Enquanto o canal oficial de atendimento LGPD não estiver publicado, solicitações devem ser feitas pela área logada ou pelo meio de contato indicado pela operação do VigiVagas. Antes da venda ou lançamento definitivo, recomenda-se inserir nesta página o e-mail oficial, razão social, CNPJ e responsável pelo atendimento de privacidade.</p>
+
+            <div class="legal-warning-box">
+                <strong>Observação profissional:</strong>
+                <p>Este texto foi estruturado para operação beta e venda do produto, mas não substitui revisão jurídica individualizada. Antes de produção comercial ampla, valide o documento com dados formais da empresa e responsável legal.</p>
+            </div>
+
+            <p class="legal-actions"><a class="btn btn-primary" href="{{ url_for('public.index') }}">Voltar ao início</a> <a class="btn btn-secondary" href="{{ url_for('public.termos') }}">Ver Termos de Uso</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
 </body>
 </html>

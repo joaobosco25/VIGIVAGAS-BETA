@@ -290,7 +290,7 @@ def init_db():
             link_candidatura TEXT,
             recrutador_id INTEGER,
             status TEXT NOT NULL DEFAULT 'ativa',
-            encerrada_em TEXT,
+            encerrada_em {timestamp_type},
             encerrada_motivo_tipo TEXT,
             encerrada_motivo TEXT,
             vigivagas_ajudou_contratacao TEXT,
@@ -479,7 +479,7 @@ def init_db():
     if "recrutador_id" not in vagas_columns:
         cursor.execute("ALTER TABLE vagas ADD COLUMN recrutador_id INTEGER")
     if "encerrada_em" not in vagas_columns:
-        cursor.execute("ALTER TABLE vagas ADD COLUMN encerrada_em TEXT")
+        cursor.execute(f"ALTER TABLE vagas ADD COLUMN encerrada_em {timestamp_type}")
     if "encerrada_motivo_tipo" not in vagas_columns:
         cursor.execute("ALTER TABLE vagas ADD COLUMN encerrada_motivo_tipo TEXT")
     if "encerrada_motivo" not in vagas_columns:

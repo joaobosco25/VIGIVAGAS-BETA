@@ -2333,3 +2333,115 @@ input:focus,select:focus,textarea:focus{
   .hero h1{font-size:2.2rem !important;}
   .panel-shell,.page-shell,.form-page,.recruiter-page,.vigilante-registration-page{padding-block:22px 48px;}
 }
+
+/* ============================================================================
+   VigiVagas - Pacote definitivo de venda: cards, LGPD, cookies e UX
+   ============================================================================ */
+:root{
+  --vv-final-navy:#071f38;
+  --vv-final-blue:#075f9f;
+  --vv-final-slate:#182437;
+  --vv-final-muted:#5b687a;
+  --vv-final-line:#d8e1ec;
+  --vv-final-card:#ffffff;
+  --vv-final-bg:#f4f7fb;
+  --vv-final-radius:20px;
+  --vv-final-shadow:0 18px 44px rgba(7,31,56,.10);
+  --vv-final-shadow-hover:0 24px 58px rgba(7,31,56,.15);
+}
+body{background:var(--vv-final-bg)!important;color:var(--vv-final-slate)!important;}
+body.cookie-modal-open{overflow:hidden;}
+
+/* Cards profissionais */
+.info-card,.access-card,.soft-card,.highlight-panel,.login-container,.admin-card,.stat-card,.vacancy-card,
+.dashboard-card,.candidate-card,.application-card,.form-card,.section-card,.registration-section-card,
+.registration-side-card,.registration-highlight-list,.registration-submit-bar,.mini-card,.table-wrap,.empty-state,
+.muted-box,.quick-card,.metric-card,.legal-card,.course-box,.form-section{
+  background:linear-gradient(180deg,#fff 0%,#fbfdff 100%)!important;
+  color:var(--vv-final-slate)!important;
+  border:1px solid var(--vv-final-line)!important;
+  border-radius:var(--vv-final-radius)!important;
+  box-shadow:var(--vv-final-shadow)!important;
+  position:relative;
+}
+.info-card::before,.access-card::before,.soft-card::before,.admin-card::before,.stat-card::before,.vacancy-card::before,
+.dashboard-card::before,.candidate-card::before,.application-card::before,.registration-section-card::before,
+.mini-card::before,.metric-card::before,.quick-card::before,.form-section::before{
+  content:"";position:absolute;left:0;top:0;width:100%;height:4px;border-radius:20px 20px 0 0;
+  background:linear-gradient(90deg,var(--vv-final-blue),#0f86ce);
+  opacity:.9;
+}
+.info-card:hover,.access-card:hover,.vacancy-card:hover,.candidate-card:hover,.application-card:hover,.quick-card:hover{
+  transform:translateY(-3px);box-shadow:var(--vv-final-shadow-hover)!important;
+}
+.info-card h1,.info-card h2,.info-card h3,.access-card h1,.access-card h2,.access-card h3,
+.soft-card h1,.soft-card h2,.soft-card h3,.admin-card h1,.admin-card h2,.admin-card h3,
+.stat-card h1,.stat-card h2,.stat-card h3,.stat-card strong,.vacancy-card h1,.vacancy-card h2,.vacancy-card h3,
+.dashboard-card h1,.dashboard-card h2,.dashboard-card h3,.candidate-card h1,.candidate-card h2,.candidate-card h3,
+.application-card h1,.application-card h2,.application-card h3,.form-card h1,.form-card h2,.form-card h3,
+.registration-section-card h1,.registration-section-card h2,.registration-section-card h3,.mini-card strong,.quick-card strong,
+.metric-card strong,.legal-card h1,.legal-card h2,.legal-card h3{color:var(--vv-final-navy)!important;}
+.info-card p,.access-card p,.soft-card p,.admin-card p,.stat-card span,.vacancy-card p,.dashboard-card p,
+.candidate-card p,.application-card p,.registration-section-card p,.mini-card p,.quick-card p,.metric-card span,
+.legal-card p,.legal-card li{color:var(--vv-final-muted)!important;}
+
+/* Formulários e tabelas com leitura clara */
+.form-group label{color:var(--vv-final-navy)!important;font-weight:800;}
+.form-group input,.form-group select,.form-group textarea,input,select,textarea{
+  color:#111827!important;background:#fff!important;border:1px solid #cbd6e3!important;border-radius:14px!important;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus,input:focus,select:focus,textarea:focus{
+  outline:0!important;border-color:var(--vv-final-blue)!important;box-shadow:0 0 0 4px rgba(7,95,159,.12)!important;
+}
+.data-table th{background:#eef4fa!important;color:var(--vv-final-navy)!important;font-weight:900!important;}
+.data-table td{background:#fff!important;color:var(--vv-final-slate)!important;}
+.data-table tr:hover td{background:#f8fbff!important;}
+
+/* Etapas de cadastro */
+.registration-section-card{padding:30px!important;}
+.registration-section-card .section-title-row{border-bottom:1px solid var(--vv-final-line);padding-bottom:16px;margin-bottom:22px;}
+.registration-submit-bar{display:grid;gap:16px;justify-items:center;}
+.lgpd-check{max-width:900px;color:var(--vv-final-slate)!important;line-height:1.6;}
+.lgpd-check a{color:var(--vv-final-blue)!important;font-weight:900;text-decoration:underline;text-underline-offset:3px;}
+
+/* Páginas legais */
+.legal-page .site-header{position:sticky;}
+.legal-shell{padding:42px 0 84px;}
+.legal-document{width:min(980px,calc(100% - 32px));margin:0 auto;padding:44px!important;}
+.legal-hero{padding-bottom:26px;margin-bottom:24px;border-bottom:1px solid var(--vv-final-line);}
+.legal-hero h1{font-size:clamp(2rem,4vw,3.4rem);line-height:1.05;margin:16px 0;color:var(--vv-final-navy)!important;}
+.legal-hero p{font-size:1.03rem;}
+.legal-note{background:#f1f6fb;border:1px solid #d8e7f4;border-radius:16px;padding:16px;color:#334155!important;}
+.legal-document h2{font-size:1.28rem;margin:32px 0 10px;padding-top:8px;color:var(--vv-final-navy)!important;}
+.legal-document p,.legal-document li{font-size:1rem;line-height:1.78;}
+.legal-document ul{padding-left:22px;margin:10px 0 0;display:grid;gap:8px;}
+.legal-grid-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:24px 0 30px;}
+.legal-grid-summary article{background:#f8fafc;border:1px solid var(--vv-final-line);border-radius:18px;padding:18px;}
+.legal-grid-summary strong{display:block;color:var(--vv-final-navy);font-size:.94rem;margin-bottom:6px;}
+.legal-grid-summary span{display:block;color:var(--vv-final-muted);font-size:.92rem;line-height:1.5;}
+.legal-warning-box{margin-top:30px;background:#fff8ed;border:1px solid #f4d7a8;border-radius:18px;padding:20px;color:#5f3b08;}
+.legal-warning-box strong{color:#7c4a03;display:block;margin-bottom:6px;}
+.legal-warning-box p{color:#6b4a16!important;margin:0;}
+.legal-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;}
+
+/* Modal de cookies */
+.cookie-consent-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:rgba(7,31,56,.62);backdrop-filter:blur(8px);animation:vvFadeIn .18s ease-out;}
+.cookie-consent-overlay.is-leaving{animation:vvFadeOut .18s ease-out forwards;}
+.cookie-consent-card{width:min(720px,100%);background:#fff;border:1px solid rgba(255,255,255,.42);border-radius:26px;padding:28px;box-shadow:0 35px 90px rgba(0,0,0,.28);color:var(--vv-final-slate);display:grid;grid-template-columns:auto 1fr;gap:18px;}
+.cookie-consent-icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--vv-final-blue),#0e89d1);color:#fff;font-weight:900;font-size:1.2rem;box-shadow:0 14px 30px rgba(7,95,159,.28);}
+.cookie-consent-content h2{margin:10px 0 8px;color:var(--vv-final-navy)!important;font-size:1.55rem;}
+.cookie-consent-content p{color:var(--vv-final-muted)!important;line-height:1.65;}
+.cookie-consent-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.cookie-consent-list span{border:1px solid var(--vv-final-line);background:#f8fafc;color:var(--vv-final-navy);border-radius:999px;padding:8px 10px;font-size:.86rem;font-weight:800;}
+.cookie-consent-actions{grid-column:1/-1;display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--vv-final-line);padding-top:18px;}
+.cookie-consent-links{grid-column:1/-1;margin:0!important;color:var(--vv-final-muted)!important;font-size:.9rem;text-align:right;}
+.cookie-consent-links a{color:var(--vv-final-blue)!important;font-weight:800;text-decoration:underline;text-underline-offset:3px;}
+@keyframes vvFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes vvFadeOut{from{opacity:1}to{opacity:0}}
+
+@media(max-width:820px){
+  .legal-document{padding:26px!important;width:calc(100% - 22px);} .legal-grid-summary{grid-template-columns:1fr;}
+  .cookie-consent-card{grid-template-columns:1fr;padding:22px;border-radius:22px;}
+  .cookie-consent-actions{justify-content:stretch}.cookie-consent-actions .btn{width:100%;}
+  .cookie-consent-links{text-align:center;}
+}

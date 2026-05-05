@@ -54,3 +54,12 @@
     }
   });
 })();
+
+(function(){
+  function ready(fn){document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);}
+  ready(function(){
+    document.querySelectorAll('.soft-card,.admin-card,.stat-card,.metric-card,.quick-card,.table-wrap').forEach(function(card){
+      card.classList.add('vv-card-ready');
+    });
+  });
+})();

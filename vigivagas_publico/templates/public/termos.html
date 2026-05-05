@@ -4,38 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Termos de Uso | VigiVagas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-<main class="page-shell">
-    <section class="section-card legal-card">
-        <span class="section-kicker">Termos · Versão 1.1</span>
-        <h1>Termos de Uso</h1>
-        <p>O VigiVagas é uma plataforma para aproximar vigilantes, candidatos da área de segurança privada e empresas recrutadoras. O uso do sistema exige informações verdadeiras, conduta responsável e respeito à legislação aplicável.</p>
+<body class="legal-page">
+    <header class="site-header compact-header">
+        <div class="container header-wrap">
+            <a href="{{ url_for('public.index') }}" class="brand with-logo">
+                <img src="{{ url_for('static', filename='imagens/logo-vigivagas.png') }}" alt="Logo VigiVagas" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-title">VigiVagas</span>
+                    <span class="brand-subtitle">Termos e responsabilidades</span>
+                </div>
+            </a>
+            <a class="btn btn-secondary" href="{{ url_for('public.index') }}">Voltar ao site</a>
+        </div>
+    </header>
 
-        <h2>Cadastro e responsabilidade</h2>
-        <p>O usuário deve informar dados reais, manter sua senha em sigilo e atualizar informações incorretas quando necessário. Cadastros falsos, duplicados, fraudulentos ou ofensivos podem ser bloqueados.</p>
+    <main class="page-shell legal-shell">
+        <section class="section-card legal-card legal-document">
+            <div class="legal-hero">
+                <span class="section-kicker">Termos de Uso · Versão 2.0</span>
+                <h1>Termos de Uso do VigiVagas</h1>
+                <p>Estes Termos regulam o uso da plataforma VigiVagas por vigilantes, candidatos, recrutadores e administradores autorizados. Ao acessar ou utilizar o sistema, o usuário declara ciência e concordância com estas condições.</p>
+                <p class="legal-note"><strong>Última atualização:</strong> 05/05/2026. Este documento deve ser complementado com razão social, CNPJ e canal oficial da empresa responsável antes da operação comercial definitiva.</p>
+            </div>
 
-        <h2>Vigilantes</h2>
-        <p>Vigilantes podem criar perfil, consultar vagas, registrar candidaturas e acompanhar oportunidades. O cadastro não garante contratação, entrevista ou convocação.</p>
+            <div class="legal-grid-summary">
+                <article><strong>Uso correto</strong><span>dados verdadeiros, conduta lícita e respeito à finalidade da plataforma.</span></article>
+                <article><strong>Sem promessa de contratação</strong><span>o VigiVagas organiza oportunidades, mas não garante entrevista, seleção ou vínculo.</span></article>
+                <article><strong>Segurança</strong><span>fraude, spam, invasão, scraping e vaga falsa podem gerar bloqueio.</span></article>
+            </div>
 
-        <h2>Recrutadores</h2>
-        <p>Recrutadores podem passar por validação cadastral, análise de e-mail, CNPJ e antifraude antes de publicar vagas. É proibido publicar vaga falsa, discriminatória, enganosa ou sem vínculo real com processo seletivo.</p>
+            <h2>1. Objeto da plataforma</h2>
+            <p>O VigiVagas é uma solução digital para cadastro de profissionais de segurança privada, divulgação de vagas, gestão de candidaturas e acompanhamento administrativo de oportunidades. A plataforma atua como meio de organização e aproximação entre usuários, não como empregadora, agência de emprego ou garantidora de contratação.</p>
 
-        <h2>Painel administrativo</h2>
-        <p>O painel do Maurício é área restrita. Ações sensíveis podem ser registradas em logs administrativos para segurança, auditoria e resolução de problemas.</p>
+            <h2>2. Cadastro e veracidade das informações</h2>
+            <p>O usuário deve fornecer dados reais, completos e atualizados. O uso de nome falso, CPF/CNPJ de terceiro, e-mail temporário, informação fraudulenta ou tentativa de burlar validações pode resultar em bloqueio, exclusão ou revisão administrativa do cadastro.</p>
 
-        <h2>Privacidade e LGPD</h2>
-        <p>Ao usar o sistema, o usuário declara ciência da Política de Privacidade. O aceite é registrado com data, IP e navegador, conforme necessidade de comprovação operacional e legal.</p>
+            <h2>3. Conta, senha e acesso</h2>
+            <p>A senha é pessoal e intransferível. O usuário é responsável por manter o sigilo de suas credenciais e por toda atividade realizada em sua conta, salvo comprovação de falha exclusivamente atribuível à plataforma.</p>
 
-        <h2>Limitações</h2>
-        <p>O VigiVagas organiza informações e candidaturas, mas não participa da contratação final. A seleção, entrevista, negociação e contratação são responsabilidade da empresa recrutadora.</p>
+            <h2>4. Regras para vigilantes e candidatos</h2>
+            <ul>
+                <li>manter dados profissionais e de contato corretos;</li>
+                <li>candidatar-se apenas a vagas de interesse real;</li>
+                <li>não inserir conteúdo ofensivo, falso, discriminatório ou ilegal;</li>
+                <li>compreender que candidatura não significa convocação, entrevista ou contratação.</li>
+            </ul>
 
-        <h2>Uso indevido</h2>
-        <p>É proibido tentar invadir o sistema, explorar falhas, enviar spam, raspar dados, publicar conteúdo falso ou utilizar informações de terceiros sem autorização.</p>
+            <h2>5. Regras para recrutadores</h2>
+            <ul>
+                <li>publicar apenas vagas verdadeiras, lícitas e vinculadas a processo seletivo real;</li>
+                <li>não solicitar pagamentos indevidos, dados excessivos ou informações incompatíveis com a vaga;</li>
+                <li>respeitar legislação trabalhista, normas da segurança privada e regras antidiscriminatórias;</li>
+                <li>encerrar oportunidades quando o processo terminar, informando motivo e se houve apoio do VigiVagas na contratação.</li>
+            </ul>
 
-        <p><a class="btn" href="{{ url_for('public.index') }}">Voltar ao início</a></p>
-    </section>
-</main>
+            <h2>6. Oportunidades encerradas</h2>
+            <p>Ao encerrar uma vaga, o recrutador poderá indicar o motivo, marcar processo seletivo finalizado, informar se o VigiVagas auxiliou na contratação e registrar observações. Essas informações são usadas para gestão, auditoria, qualidade da plataforma e melhoria do serviço. Não devem ser inseridos dados sensíveis, detalhes discriminatórios ou informações desnecessárias sobre candidatos.</p>
+
+            <h2>7. Condutas proibidas</h2>
+            <p>É proibido tentar invadir, copiar, raspar ou explorar falhas do sistema; publicar vaga falsa; usar dados de terceiros sem autorização; praticar spam; discriminar candidatos; compartilhar credenciais; ou utilizar a plataforma para finalidade ilegal ou incompatível com segurança privada e recrutamento profissional.</p>
+
+            <h2>8. Painel administrativo</h2>
+            <p>O painel administrativo do Maurício é área restrita, destinada à gestão da plataforma, suporte, moderação, auditoria, filtros, exportações, revisão de cadastros e acompanhamento de oportunidades. Ações administrativas podem ser registradas em logs.</p>
+
+            <h2>9. Privacidade e LGPD</h2>
+            <p>O uso da plataforma envolve tratamento de dados pessoais conforme a Política de Privacidade. O aceite dos Termos e da Política pode ser registrado com data, IP e navegador para comprovação de consentimento, segurança e auditoria.</p>
+
+            <h2>10. Limitação de responsabilidade</h2>
+            <p>O VigiVagas não garante contratação, entrevista, permanência de vagas, veracidade absoluta de todas as informações inseridas por terceiros ou resultado específico em processos seletivos. A seleção, contato, entrevista, negociação e eventual contratação são responsabilidades das partes envolvidas.</p>
+
+            <h2>11. Alterações dos Termos</h2>
+            <p>Estes Termos podem ser atualizados para refletir melhorias, exigências legais, ajustes operacionais ou novas funcionalidades. Quando houver alteração relevante, a plataforma poderá solicitar novo aceite.</p>
+
+            <div class="legal-warning-box">
+                <strong>Observação profissional:</strong>
+                <p>Este documento melhora a apresentação comercial e operacional do produto, mas deve receber revisão jurídica antes de venda em escala ou uso definitivo por empresa formalmente constituída.</p>
+            </div>
+
+            <p class="legal-actions"><a class="btn btn-primary" href="{{ url_for('public.index') }}">Voltar ao início</a> <a class="btn btn-secondary" href="{{ url_for('public.privacidade') }}">Ver Política de Privacidade</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
 </body>
 </html>

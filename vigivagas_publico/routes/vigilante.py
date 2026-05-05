@@ -133,23 +133,28 @@ def cadastro():
         captcha_resposta = request.form.get("captcha_resposta", "")
         obrigatorios = [
             "email", "nome", "cpf", "cep", "endereco", "cidade", "estado", "telefone", "escolaridade",
-            "possui_cfv", "data_ultima_reciclagem", "curso_ultima_reciclagem", "ultima_experiencia_profissional",
+            "possui_cfv", "ultima_experiencia_profissional",
         ]
-        faltando = [campo for campo in obrigatorios if not dados[campo]]
-        if faltando:
-            flash("Preencha todos os campos obrigatórios do vigilante.", "error")
-            return redirect(url_for("vigilante.cadastro"))
 
         if dados["possui_cfv"] not in {"SIM", "NAO", "NÃO"}:
             flash("Informe corretamente se possui Curso de Formação de Vigilantes.", "error")
             return redirect(url_for("vigilante.cadastro"))
 
-        if dados["possui_cfv"] == "SIM" and not dados["instituicao_formacao"]:
-            flash("Informe a instituição em que você se formou no CFV.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+        if dados["possui_cfv"] == "SIM":
+            obrigatorios.extend(["data_ultima_reciclagem", "curso_ultima_reciclagem"])
+            if not dados["instituicao_formacao"]:
+                flash("Informe a instituição em que você se formou no CFV.", "error")
+                return redirect(url_for("vigilante.cadastro"))
 
         if dados["possui_cfv"] in {"NAO", "NÃO"}:
             dados["instituicao_formacao"] = ""
+            dados["data_ultima_reciclagem"] = ""
+            dados["curso_ultima_reciclagem"] = ""
+
+        faltando = [campo for campo in obrigatorios if not dados[campo]]
+        if faltando:
+            flash("Preencha todos os campos obrigatórios do vigilante.", "error")
+            return redirect(url_for("vigilante.cadastro"))
 
         if not senha or not confirmar_senha:
             flash("Crie e confirme uma senha para acessar sua área de vigilante.", "error")

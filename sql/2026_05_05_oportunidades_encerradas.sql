@@ -1,5 +1,8 @@
 -- Migração segura: adiciona campos para encerramento de vagas sem apagar dados.
-ALTER TABLE vagas ADD COLUMN IF NOT EXISTS encerrada_em TEXT;
+ALTER TABLE vagas ADD COLUMN IF NOT EXISTS encerrada_em TIMESTAMP;
+ALTER TABLE vagas
+  ALTER COLUMN encerrada_em TYPE TIMESTAMP
+  USING NULLIF(encerrada_em::text, '')::timestamp;
 ALTER TABLE vagas ADD COLUMN IF NOT EXISTS encerrada_motivo_tipo TEXT;
 ALTER TABLE vagas ADD COLUMN IF NOT EXISTS encerrada_motivo TEXT;
 ALTER TABLE vagas ADD COLUMN IF NOT EXISTS vigivagas_ajudou_contratacao TEXT;
