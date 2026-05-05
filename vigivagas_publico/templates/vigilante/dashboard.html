@@ -28,13 +28,6 @@
                 <button class="btn btn-secondary" type="submit">Sair</button>
             </form>
         </div>
-    
-            <a class="btn btn-secondary" href="{{ url_for('vigilante.meus_dados_json') }}">Exportar meus dados</a>
-            <form method="POST" action="{{ url_for('vigilante.excluir_conta') }}" onsubmit="return confirm('Confirmar anonimização/exclusão da conta? Esta ação não deve ser feita por teste.');">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-danger" type="submit">Excluir/anonimizar conta</button>
-            </form>
-
         </header>
 
     <main class="panel-shell">
@@ -91,6 +84,7 @@
                 <a href="#meu-perfil">Meu perfil</a>
                 <a href="#vagas-disponiveis">Vagas abertas</a>
                 <a href="#minhas-candidaturas">Andamento</a>
+                <a href="#configuracoes-conta">Configurações</a>
             </nav>
 
             <section class="metric-strip">
@@ -295,6 +289,24 @@
                     </div>
                 {% endif %}
             </section>
+
+            <section class="soft-card top-gap account-settings-card" id="configuracoes-conta">
+                <div class="section-title-row">
+                    <div>
+                        <span class="section-kicker">Configurações</span>
+                        <h2>Dados e privacidade da conta</h2>
+                        <p>Gerencie exportação de dados e ações sensíveis da sua conta. Esta área fica separada do fluxo principal para evitar ações acidentais.</p>
+                    </div>
+                </div>
+                <div class="settings-actions">
+                    <a class="btn btn-secondary" href="{{ url_for('vigilante.meus_dados_json') }}">Exportar meus dados</a>
+                    <form method="POST" action="{{ url_for('vigilante.excluir_conta') }}" onsubmit="return confirm('Confirmar anonimização/exclusão da conta? Esta ação não deve ser feita por teste.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-danger" type="submit">Excluir/anonimizar conta</button>
+                    </form>
+                </div>
+            </section>
+
         </div>
     </main>
     <script src="{{ url_for('static', filename='ui.js') }}"></script>

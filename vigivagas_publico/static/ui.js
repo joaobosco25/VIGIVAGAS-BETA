@@ -58,7 +58,7 @@
 (function(){
   function ready(fn){document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);}
   ready(function(){
-    var key = 'vigivagas_cookie_preference_v2';
+    var key = 'vigivagas_cookie_preference_v3';
     if(localStorage.getItem(key)) return;
 
     var overlay = document.createElement('div');
@@ -98,3 +98,42 @@
     });
   });
 })();
+
+(function(){
+  function ready(fn){document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);}
+  ready(function(){
+    document.querySelectorAll('.table-wrap').forEach(function(wrap){
+      if(wrap.dataset.vvLimited === '1') return;
+      var table = wrap.querySelector('table.data-table');
+      if(!table || !table.querySelector('thead')) return;
+      var tbody = table.querySelector('tbody');
+      if(!tbody) return;
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll(':scope > tr'));
+      if(rows.length <= 5) return;
+      wrap.dataset.vvLimited = '1';
+      var expanded = false;
+      function apply(){
+        rows.forEach(function(row, index){
+          row.classList.toggle('vv-row-hidden', !expanded && index >= 5);
+        });
+        button.textContent = expanded ? 'Mostrar menos' : 'Mostrar tudo';
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      }
+      var holder = document.createElement('div');
+      holder.className = 'vv-table-toggle-row';
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-secondary';
+      button.setAttribute('aria-expanded','false');
+      button.addEventListener('click', function(){
+        expanded = !expanded;
+        apply();
+        if(!expanded){ wrap.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+      });
+      holder.appendChild(button);
+      wrap.insertAdjacentElement('afterend', holder);
+      apply();
+    });
+  });
+})();
+
