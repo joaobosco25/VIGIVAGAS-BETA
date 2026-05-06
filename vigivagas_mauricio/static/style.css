@@ -646,3 +646,6 @@ body.cookie-modal-open{overflow:hidden!important;}
   .vv-metric-toggle-row .btn{width:100%!important;max-width:340px!important;}
   .candidate-form.status-form .form-grid>.form-group:last-child{display:grid!important;grid-template-columns:1fr!important;}
 }
+
+/* Prioridade 3 — clareza sobre exportações limitadas */
+.export-limit-warning,.table-limit-warning{border:1px solid rgba(180,83,9,.25);background:#fffbeb;color:#92400e;border-radius:16px;padding:10px 12px;margin:10px 0;font-weight:700;}

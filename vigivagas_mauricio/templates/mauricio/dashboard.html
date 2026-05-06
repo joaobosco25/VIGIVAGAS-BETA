@@ -100,6 +100,7 @@
                     </div>
                     <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_recrutadores', **request.args) }}">Exportar recrutadores</a>
                 </div>
+                <div class="export-limit-warning" role="note">Atenção: a exportação usa os filtros e o limite atualmente carregado. Clique em “Mostrar mais” antes de exportar se precisar de mais linhas.</div>
                 <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-recrutadores" class="candidate-form status-form preserve-section-form" data-target-section="secao-recrutadores" style="margin-bottom: 1rem;">
                     <div class="form-grid two-columns">
                         <div class="form-group"><label>Status</label><select name="r_status"><option value="" {% if not filtros.r_status %}selected{% endif %}>Todos</option><option value="pendente" {% if filtros.r_status == 'pendente' %}selected{% endif %}>PENDENTE</option><option value="validado" {% if filtros.r_status == 'validado' %}selected{% endif %}>VALIDADO</option><option value="verificado" {% if filtros.r_status == 'verificado' %}selected{% endif %}>VERIFICADO</option></select></div>
@@ -138,6 +139,7 @@
                     <div><span class="section-kicker">Vigilantes</span><h2>Profissionais cadastrados</h2><p>Filtre por nome, cidade, status e antifraude. Exporte uma planilha separada.</p></div>
                     <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_vigilantes', **request.args) }}">Exportar vigilantes</a>
                 </div>
+                <div class="export-limit-warning" role="note">Atenção: a exportação usa os filtros e o limite atualmente carregado. Clique em “Mostrar mais” antes de exportar se precisar de mais linhas.</div>
                 <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-vigilantes" class="candidate-form status-form preserve-section-form" data-target-section="secao-vigilantes" style="margin-bottom: 1rem;">
                     <div class="form-grid two-columns">
                         <div class="form-group"><label>Status</label><select name="v_status"><option value="" {% if not filtros.v_status %}selected{% endif %}>Todos</option><option value="ativo" {% if filtros.v_status == 'ativo' %}selected{% endif %}>ATIVO</option><option value="validado" {% if filtros.v_status == 'validado' %}selected{% endif %}>VALIDADO</option></select></div>
@@ -173,6 +175,7 @@
                     <div><span class="section-kicker">Vagas</span><h2>Vagas da plataforma</h2><p>Filtre por empresa, cidade e status. Exporte a planilha geral ou os inscritos por vaga.</p></div>
                     <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_vagas', **request.args) }}">Exportar vagas</a>
                 </div>
+                <div class="export-limit-warning" role="note">Atenção: a exportação usa os filtros e o limite atualmente carregado. Clique em “Mostrar mais” antes de exportar se precisar de mais linhas.</div>
                 <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-vagas" class="candidate-form status-form preserve-section-form" data-target-section="secao-vagas" style="margin-bottom: 1rem;">
                     <div class="form-grid two-columns">
                         <div class="form-group"><label>Empresa</label><input type="text" name="g_empresa" value="{{ filtros.g_empresa }}"></div>
@@ -184,7 +187,7 @@
                 {% if vagas %}
                 <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Título</th><th>Empresa</th><th>Cidade</th><th>Status</th><th>Candidaturas</th><th>Exportação</th></tr></thead><tbody>
                 {% for vaga in vagas %}
-                <tr><td>{{ vaga['id'] }}</td><td>{{ vaga['titulo'] }}</td><td>{{ vaga['empresa'] }}<br><small>{{ vaga['recrutador_empresa'] or '-' }}</small></td><td>{{ vaga['cidade'] }}/{{ vaga['estado'] }}</td><td><span class="status-pill status-pill-{{ vaga['status']|replace(' ', '-')|lower }}">{{ vaga['status'] }}</span></td><td>{{ vaga['total_candidaturas'] }}</td><td><a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_candidaturas_vaga', vaga_id=vaga['id']) }}">Exportar inscritos</a></td></tr>
+                <tr><td>{{ vaga['id'] }}</td><td>{{ vaga['titulo'] }}</td><td>{{ vaga['empresa'] }}<br><small>{{ vaga['recrutador_empresa'] or '-' }}</small></td><td>{{ vaga['cidade'] }}/{{ vaga['estado'] }}</td><td><span class="status-pill status-pill-{{ vaga['status']|replace(' ', '-')|lower }}">{{ vaga['status'] }}</span></td><td>{{ vaga['total_candidaturas'] }}</td><td><a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_candidaturas_vaga', vaga_id=vaga['id'], **request.args) }}">Exportar inscritos</a></td></tr>
                 {% endfor %}
                 </tbody></table></div>
                 {% else %}<div class="empty-state">Nenhuma vaga encontrada para os filtros aplicados.</div>{% endif %}
@@ -219,6 +222,7 @@
                     <div><span class="section-kicker">Candidaturas</span><h2>Inscrições gerais</h2><p>Filtre por nome, empresa, status e cidade. Exporte uma planilha separada dessa categoria.</p></div>
                     <a class="btn btn-secondary" href="{{ url_for('mauricio.exportar_candidaturas', **request.args) }}">Exportar candidaturas</a>
                 </div>
+                <div class="export-limit-warning" role="note">Atenção: a exportação usa os filtros e o limite atualmente carregado. Clique em “Mostrar mais” antes de exportar se precisar de mais linhas.</div>
                 <form method="GET" action="{{ url_for('mauricio.dashboard') }}#secao-candidaturas" class="candidate-form status-form preserve-section-form" data-target-section="secao-candidaturas" style="margin-bottom: 1rem;">
                     <div class="form-grid two-columns">
                         <div class="form-group"><label>Status</label><input type="text" name="c_status" value="{{ filtros.c_status }}" placeholder="Recebida, Em análise..."></div>

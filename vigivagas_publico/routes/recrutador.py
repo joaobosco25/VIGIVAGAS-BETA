@@ -126,6 +126,22 @@ def _emitir_token_para_recrutador(conn, recrutador_id: int, email: str) -> str:
     return mensagem_envio
 
 
+
+def _render_cadastro_com_erro(message: str, field: str | None = None):
+    """Renderiza o cadastro preservando os dados digitados e destacando o campo com erro."""
+    form_data = request.form.to_dict(flat=True)
+    form_data.pop("password", None)
+    form_data.pop("confirm_password", None)
+    form_errors = {field: message} if field else {"__all__": message}
+    flash(message, "error")
+    return render_template(
+        "recrutador/cadastro.html",
+        captcha_question=generate_captcha("recrutador_cadastro"),
+        form_data=form_data,
+        form_errors=form_errors,
+        first_error_field=field or "nome_empresa",
+    ), 400
+
 def _registrar_consentimento_lgpd(conn, user_type: str, user_id, email: str):
     texto = "Aceite da Política de Privacidade e Termos de Uso do VigiVagas."
     ip = get_client_ip(request)
@@ -156,8 +172,7 @@ def cadastro():
 
     if request.method == "POST":
         if request.form.get("aceite_lgpd") != "1":
-            flash("Para continuar, aceite a Política de Privacidade e os Termos de Uso.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("Para continuar, aceite a Política de Privacidade e os Termos de Uso.", "aceite_lgpd")
 
         client_ip = get_client_ip(request)
         user_agent = get_user_agent(request)
@@ -178,45 +193,35 @@ def cadastro():
         obrigatorios = ["nome_empresa", "nome_responsavel", "email", "telefone", "cidade", "estado", "cnpj", "password", "confirm_password"]
         faltando = [campo for campo in obrigatorios if not dados[campo]]
         if faltando:
-            flash("Preencha todos os campos obrigatórios do recrutador.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("Preencha todos os campos obrigatórios do recrutador.", faltando[0] if faltando else None)
 
         if not verify_captcha("recrutador_cadastro", captcha_resposta):
-            flash("CAPTCHA inválido. Resolva a conta corretamente para continuar.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("CAPTCHA inválido. Resolva a conta corretamente para continuar.", "captcha_resposta")
 
         if not is_valid_phone(dados["telefone"]):
-            flash("Informe um telefone válido com DDD.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("Informe um telefone válido com DDD.", "telefone")
 
         if not is_valid_state_code(dados["estado"]):
-            flash("Informe uma UF válida com 2 letras.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("Informe uma UF válida com 2 letras.", "estado")
 
         if not has_meaningful_length(dados["nome_empresa"], 5) or looks_like_test_company(dados["nome_empresa"]):
-            flash("Informe uma empresa real. Cadastros de teste ou genéricos são bloqueados.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("Informe uma empresa real. Cadastros de teste ou genéricos são bloqueados.", "nome_empresa")
 
         if not has_meaningful_length(dados["nome_responsavel"], 8) or looks_like_test_name(dados["nome_responsavel"]):
-            flash("Informe o nome completo real do responsável pela empresa.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("Informe o nome completo real do responsável pela empresa.", "nome_responsavel")
 
         if is_disposable_email(dados["email"]):
-            flash("E-mails temporários ou descartáveis não são aceitos para empresas.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("E-mails temporários ou descartáveis não são aceitos para empresas.", "email")
 
         cnpj_ok, cnpj_msg, cnpj_dados = consultar_cnpj(dados["cnpj"])
         if not cnpj_ok:
-            flash(cnpj_msg, "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro(cnpj_msg, "cnpj")
 
         if dados["password"] != dados["confirm_password"]:
-            flash("As senhas do recrutador não conferem.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("As senhas do recrutador não conferem.", "confirm_password")
 
         if not is_strong_password(dados["password"]):
-            flash("A senha deve ter no mínimo 10 caracteres, letra maiúscula, minúscula, número e caractere especial.", "error")
-            return redirect(url_for("recrutador.cadastro"))
+            return _render_cadastro_com_erro("A senha deve ter no mínimo 10 caracteres, letra maiúscula, minúscula, número e caractere especial.", "password")
 
         conn = get_connection()
         existente = conn.execute(
@@ -225,8 +230,7 @@ def cadastro():
         ).fetchone()
         if existente:
             conn.close()
-            flash("Já existe recrutador cadastrado com este e-mail.", "error")
-            return redirect(url_for("recrutador.login"))
+            return _render_cadastro_com_erro("Já existe recrutador cadastrado com este e-mail. Use a área de login.", "email")
 
         cnpj_existente = conn.execute(
             "SELECT id FROM recrutadores WHERE cnpj = ?",
@@ -234,8 +238,7 @@ def cadastro():
         ).fetchone()
         if cnpj_existente:
             conn.close()
-            flash("Já existe solicitação de recrutador para este CNPJ. Isso ajuda a impedir empresas fantasmas ou duplicadas.", "error")
-            return redirect(url_for("recrutador.login"))
+            return _render_cadastro_com_erro("Já existe solicitação de recrutador para este CNPJ. Isso ajuda a impedir empresas fantasmas ou duplicadas.", "cnpj")
 
         antifraude_score, antifraude_flags, antifraude_status = evaluate_recrutador_risk(
             conn,
@@ -305,7 +308,7 @@ def cadastro():
         flash(mensagem_envio, "info")
         return redirect(url_for("recrutador.validar_email", email=dados["email"]))
 
-    return render_template("recrutador/cadastro.html", captcha_question=generate_captcha("recrutador_cadastro"))
+    return render_template("recrutador/cadastro.html", captcha_question=generate_captcha("recrutador_cadastro"), form_data={}, form_errors={}, first_error_field=None)
 
 
 @recrutador_bp.route("/validar-email", methods=["GET", "POST"])
@@ -320,7 +323,7 @@ def validar_email():
         flash("Informe o e-mail do recrutador para validar.", "error")
         return redirect(url_for("recrutador.validar_email"))
 
-    if not token or len(token) != 5 or not token.isdigit():
+    if not token or len(token) != 8 or not token.isdigit():
         flash("Informe o código de 8 números enviado para o e-mail.", "error")
         return redirect(url_for("recrutador.validar_email", email=email))
 

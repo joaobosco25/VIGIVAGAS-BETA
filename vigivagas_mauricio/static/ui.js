@@ -159,3 +159,23 @@ window.addEventListener('load', () => {
     if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
     sessionStorage.removeItem('mauricio_last_section');
 });
+
+// Prioridade 3 — preservar posição/filtros no painel e destacar aviso de exportação limitada.
+(function(){
+  function ready(fn){document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn);}
+  ready(function(){
+    var key='vigivagas:mauricio:scroll';
+    document.querySelectorAll('form').forEach(function(form){
+      form.addEventListener('submit', function(){ try{ sessionStorage.setItem(key, String(window.scrollY)); }catch(e){} });
+    });
+    document.querySelectorAll('a[href*="/exportar/"]').forEach(function(a){
+      a.addEventListener('click', function(){ try{ sessionStorage.setItem(key, String(window.scrollY)); }catch(e){} });
+      if(!a.dataset.limitedHint){ a.dataset.limitedHint='1'; a.title='A exportação respeita os filtros e o limite atualmente carregado na tela.'; }
+    });
+    if(location.hash){
+      setTimeout(function(){ var el=document.querySelector(location.hash); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }, 120);
+    } else {
+      try{ var y=parseInt(sessionStorage.getItem(key)||'',10); if(!isNaN(y) && y>0) setTimeout(function(){ window.scrollTo({top:y, behavior:'smooth'}); sessionStorage.removeItem(key); }, 120); }catch(e){}
+    }
+  });
+})();

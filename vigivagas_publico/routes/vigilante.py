@@ -78,6 +78,22 @@ def _find_valid_password_reset(conn, user_type: str, token: str):
 
 
 
+
+def _render_cadastro_com_erro(message: str, field: str | None = None):
+    """Renderiza o cadastro preservando os dados digitados e destacando o campo com erro."""
+    form_data = request.form.to_dict(flat=True)
+    form_data.pop("password", None)
+    form_data.pop("confirm_password", None)
+    form_errors = {field: message} if field else {"__all__": message}
+    flash(message, "error")
+    return render_template(
+        "vigilante/cadastro.html",
+        captcha_question=generate_captcha("vigilante_cadastro"),
+        form_data=form_data,
+        form_errors=form_errors,
+        first_error_field=field or "email",
+    ), 400
+
 def _registrar_consentimento_lgpd(conn, user_type: str, user_id, email: str):
     texto = "Aceite da Política de Privacidade e Termos de Uso do VigiVagas."
     ip = get_client_ip(request)
@@ -100,8 +116,7 @@ def root():
 def cadastro():
     if request.method == "POST":
         if request.form.get("aceite_lgpd") != "1":
-            flash("Para continuar, aceite a Política de Privacidade e os Termos de Uso.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Para continuar, aceite a Política de Privacidade e os Termos de Uso.", "aceite_lgpd")
 
         client_ip = get_client_ip(request)
         user_agent = get_user_agent(request)
@@ -138,14 +153,12 @@ def cadastro():
         ]
 
         if dados["possui_cfv"] not in {"SIM", "NAO", "NÃO"}:
-            flash("Informe corretamente se possui Curso de Formação de Vigilantes.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe corretamente se possui Curso de Formação de Vigilantes.", "possui_cfv")
 
         if dados["possui_cfv"] == "SIM":
             obrigatorios.extend(["data_ultima_reciclagem", "curso_ultima_reciclagem"])
             if not dados["instituicao_formacao"]:
-                flash("Informe a instituição em que você se formou no CFV.", "error")
-                return redirect(url_for("vigilante.cadastro"))
+                return _render_cadastro_com_erro("Informe a instituição em que você se formou no CFV.", "instituicao_formacao")
 
         if dados["possui_cfv"] in {"NAO", "NÃO"}:
             dados["instituicao_formacao"] = ""
@@ -154,52 +167,40 @@ def cadastro():
 
         faltando = [campo for campo in obrigatorios if not dados[campo]]
         if faltando:
-            flash("Preencha todos os campos obrigatórios do vigilante.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Preencha todos os campos obrigatórios do vigilante.", faltando[0] if faltando else None)
 
         if not senha or not confirmar_senha:
-            flash("Crie e confirme uma senha para acessar sua área de vigilante.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Crie e confirme uma senha para acessar sua área de vigilante.", "password")
 
         if senha != confirmar_senha:
-            flash("A confirmação de senha não confere.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("A confirmação de senha não confere.", "confirm_password")
 
         if not is_strong_password(senha):
-            flash("Use uma senha forte com pelo menos 10 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Use uma senha forte com pelo menos 10 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.", "password")
 
         if not verify_captcha("vigilante_cadastro", captcha_resposta):
-            flash("CAPTCHA inválido. Resolva a conta corretamente para continuar.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("CAPTCHA inválido. Resolva a conta corretamente para continuar.", "captcha_resposta")
 
         if not is_valid_phone(dados["telefone"]):
-            flash("Informe um telefone válido com DDD.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe um telefone válido com DDD.", "telefone")
 
         if not is_valid_cpf(dados["cpf"]):
-            flash("Informe um CPF válido para concluir o cadastro do vigilante.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe um CPF válido para concluir o cadastro do vigilante.", "cpf")
 
         if not is_valid_state_code(dados["estado"]):
-            flash("Informe uma UF válida com 2 letras.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe uma UF válida com 2 letras.", "estado")
 
         if not is_valid_cep(dados["cep"]):
-            flash("Informe um CEP válido com 8 dígitos.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe um CEP válido com 8 dígitos.", "cep")
 
         if not has_meaningful_length(dados["nome"], 8) or looks_like_test_name(dados["nome"]):
-            flash("Informe um nome completo real. Cadastros de teste ou incompletos são bloqueados.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe um nome completo real. Cadastros de teste ou incompletos são bloqueados.", "nome")
 
         if not has_meaningful_length(dados["endereco"], 10):
-            flash("Informe um endereço mais completo para reduzir cadastros fantasmas.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("Informe um endereço mais completo para reduzir cadastros fantasmas.", "endereco")
 
         if is_disposable_email(dados["email"]):
-            flash("E-mails temporários ou descartáveis não são aceitos.", "error")
-            return redirect(url_for("vigilante.cadastro"))
+            return _render_cadastro_com_erro("E-mails temporários ou descartáveis não são aceitos.", "email")
 
         conn = get_connection()
         existente = conn.execute(
@@ -208,8 +209,7 @@ def cadastro():
         ).fetchone()
         if existente:
             conn.close()
-            flash("Já existe vigilante cadastrado com este e-mail.", "error")
-            return redirect(url_for("vigilante.login"))
+            return _render_cadastro_com_erro("Já existe vigilante cadastrado com este e-mail. Use a área de login.", "email")
 
         cpf_existente = conn.execute(
             "SELECT id FROM vigilantes WHERE cpf = ? UNION SELECT id FROM candidatos WHERE cpf = ?",
@@ -217,8 +217,7 @@ def cadastro():
         ).fetchone()
         if cpf_existente:
             conn.close()
-            flash("Já existe cadastro com este CPF. Use o login do vigilante ou contate o suporte para revisão.", "error")
-            return redirect(url_for("vigilante.login"))
+            return _render_cadastro_com_erro("Já existe cadastro com este CPF. Use o login do vigilante ou contate o suporte para revisão.", "cpf")
 
         antifraude_score, antifraude_flags, antifraude_status = evaluate_vigilante_risk(
             conn,
@@ -285,7 +284,7 @@ def cadastro():
             flash("Cadastro salvo com sinalização preventiva para revisão administrativa.", "info")
         return redirect(url_for("vigilante.login"))
 
-    return render_template("vigilante/cadastro.html", captcha_question=generate_captcha("vigilante_cadastro"))
+    return render_template("vigilante/cadastro.html", captcha_question=generate_captcha("vigilante_cadastro"), form_data={}, form_errors={}, first_error_field=None)
 
 
 @vigilante_bp.route("/login", methods=["GET", "POST"])

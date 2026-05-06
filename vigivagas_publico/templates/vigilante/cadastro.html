@@ -63,8 +63,19 @@
             </section>
 
             <section class="form-shell vigilante-form-shell">
-                <form method="POST" class="candidate-form vigilante-registration-form" novalidate>
+                <form method="POST" class="candidate-form vigilante-registration-form" data-vv-validate="vigilante" data-draft-key="vigivagas:vigilante:cadastro">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if form_errors %}
+                    <div class="form-error-summary" role="alert" tabindex="-1" data-error-summary>
+                        <strong>Revise os campos antes de continuar.</strong>
+                        <ul>
+                            {% for campo, erro in form_errors.items() %}
+                                <li>{{ erro }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     <section class="soft-card registration-section-card">
                         <div class="section-title-row compact-stack">
                             <div>
@@ -76,49 +87,49 @@
                         <div class="form-grid two-columns form-grid-balanced">
                             <div class="form-group">
                                 <label for="email">1 - E-mail *</label>
-                                <input type="email" id="email" name="email" autocomplete="email" required>
+                                <input type="email" id="email" name="email" autocomplete="email" required value="{{ (form_data or {}).get('email', '') }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="nome">2 - Nome Completo *</label>
-                                <input type="text" id="nome" name="nome" autocomplete="name" required>
+                                <input type="text" id="nome" name="nome" autocomplete="name" required value="{{ (form_data or {}).get('nome', '') }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="cpf">3 - CPF *</label>
-                                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" inputmode="numeric" autocomplete="off" required>
+                                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" inputmode="numeric" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" data-mask="cpf" autocomplete="off" required value="{{ (form_data or {}).get('cpf', '') }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="telefone">4 - Telefone *</label>
-                                <input type="text" id="telefone" name="telefone" placeholder="(00) 00000-0000" autocomplete="tel" required>
+                                <input type="text" id="telefone" name="telefone" placeholder="(00) 00000-0000" inputmode="numeric" pattern="\(\d{2}\) \d{4,5}-\d{4}" data-mask="telefone" autocomplete="tel" required value="{{ (form_data or {}).get('telefone', '') }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="cep">5 - CEP *</label>
-                                <input type="text" id="cep" name="cep" placeholder="00000-000" inputmode="numeric" autocomplete="postal-code" required>
+                                <input type="text" id="cep" name="cep" placeholder="00000-000" inputmode="numeric" pattern="\d{5}-\d{3}" data-mask="cep" autocomplete="postal-code" required value="{{ (form_data or {}).get('cep', '') }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="estado">6 - Estado (UF) *</label>
-                                <input type="text" id="estado" name="estado" maxlength="2" autocomplete="address-level1" required>
+                                <input type="text" id="estado" name="estado" maxlength="2" autocomplete="address-level1" required value="{{ (form_data or {}).get('estado', '') }}">
                             </div>
 
                             <div class="form-group two-columns-span">
                                 <label for="endereco">7 - Endereço *</label>
-                                <input type="text" id="endereco" name="endereco" autocomplete="street-address" required>
+                                <input type="text" id="endereco" name="endereco" autocomplete="street-address" required value="{{ (form_data or {}).get('endereco', '') }}">
                                 <small class="field-help">O CEP busca o endereço automaticamente. Complete número e complemento se necessário.</small>
                                 <div id="cep-status" class="cep-status" aria-live="polite">Digite o CEP para preencher endereço, cidade e estado.</div>
                             </div>
 
                             <div class="form-group">
                                 <label for="cidade">8 - Cidade *</label>
-                                <input type="text" id="cidade" name="cidade" autocomplete="address-level2" required>
+                                <input type="text" id="cidade" name="cidade" autocomplete="address-level2" required value="{{ (form_data or {}).get('cidade', '') }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="objetivo_cargo">9 - Objetivo/Cargo Profissional</label>
-                                <input type="text" id="objetivo_cargo" name="objetivo_cargo" placeholder="Ex.: Vigilante patrimonial, escolta armada">
+                                <input type="text" id="objetivo_cargo" name="objetivo_cargo" placeholder="Ex.: Vigilante patrimonial, escolta armada" value="{{ (form_data or {}).get('objetivo_cargo', '') }}">
                             </div>
                         </div>
                     </section>
@@ -136,12 +147,12 @@
                                 <label for="escolaridade">10 - Escolaridade *</label>
                                 <select id="escolaridade" name="escolaridade" required>
                                     <option value="">Selecione</option>
-                                    <option value="FUNDAMENTAL COMPLETO">Fundamental Completo</option>
-                                    <option value="ENSINO FUNDAMENTAL INCOMPLETO">Ensino fundamental incompleto</option>
-                                    <option value="ENSINO MEDIO COMPLETO">Ensino Medio completo</option>
-                                    <option value="ENSINO MEDIO INCOMPLETO">Ensino Medio incompleto</option>
-                                    <option value="ENSINO SUPERIOR COMPLETO">Ensino Superior completo</option>
-                                    <option value="ENSINO SUPERIOR INCOMPLETO">Ensino Superior incompleto</option>
+                                    <option value="FUNDAMENTAL COMPLETO" {% if (form_data or {}).get('escolaridade') == 'FUNDAMENTAL COMPLETO' or (form_data or {}).get('possui_cfv') == 'FUNDAMENTAL COMPLETO' %}selected{% endif %}>Fundamental Completo</option>
+                                    <option value="ENSINO FUNDAMENTAL INCOMPLETO" {% if (form_data or {}).get('escolaridade') == 'ENSINO FUNDAMENTAL INCOMPLETO' or (form_data or {}).get('possui_cfv') == 'ENSINO FUNDAMENTAL INCOMPLETO' %}selected{% endif %}>Ensino fundamental incompleto</option>
+                                    <option value="ENSINO MEDIO COMPLETO" {% if (form_data or {}).get('escolaridade') == 'ENSINO MEDIO COMPLETO' or (form_data or {}).get('possui_cfv') == 'ENSINO MEDIO COMPLETO' %}selected{% endif %}>Ensino Medio completo</option>
+                                    <option value="ENSINO MEDIO INCOMPLETO" {% if (form_data or {}).get('escolaridade') == 'ENSINO MEDIO INCOMPLETO' or (form_data or {}).get('possui_cfv') == 'ENSINO MEDIO INCOMPLETO' %}selected{% endif %}>Ensino Medio incompleto</option>
+                                    <option value="ENSINO SUPERIOR COMPLETO" {% if (form_data or {}).get('escolaridade') == 'ENSINO SUPERIOR COMPLETO' or (form_data or {}).get('possui_cfv') == 'ENSINO SUPERIOR COMPLETO' %}selected{% endif %}>Ensino Superior completo</option>
+                                    <option value="ENSINO SUPERIOR INCOMPLETO" {% if (form_data or {}).get('escolaridade') == 'ENSINO SUPERIOR INCOMPLETO' or (form_data or {}).get('possui_cfv') == 'ENSINO SUPERIOR INCOMPLETO' %}selected{% endif %}>Ensino Superior incompleto</option>
                                 </select>
                             </div>
 
@@ -149,14 +160,14 @@
                                 <label for="possui_cfv">11 - Possui Curso de Formação de Vigilantes - CFV? *</label>
                                 <select id="possui_cfv" name="possui_cfv" required>
                                     <option value="">Selecione</option>
-                                    <option value="SIM">Sim</option>
-                                    <option value="NAO">Não</option>
+                                    <option value="SIM" {% if (form_data or {}).get('escolaridade') == 'SIM' or (form_data or {}).get('possui_cfv') == 'SIM' %}selected{% endif %}>Sim</option>
+                                    <option value="NAO" {% if (form_data or {}).get('escolaridade') == 'NAO' or (form_data or {}).get('possui_cfv') == 'NAO' %}selected{% endif %}>Não</option>
                                 </select>
                             </div>
 
                             <div class="form-group two-columns-span" id="instituicao-wrapper" style="display:none;">
                                 <label for="instituicao_formacao">11.1 - Se sim, em qual instituição se formou? *</label>
-                                <input type="text" id="instituicao_formacao" name="instituicao_formacao" placeholder="Nome da instituição de formação">
+                                <input type="text" id="instituicao_formacao" name="instituicao_formacao" placeholder="Nome da instituição de formação" value="{{ (form_data or {}).get('instituicao_formacao', '') }}">
                             </div>
                         </div>
                     </section>
@@ -173,35 +184,35 @@
                             <div class="form-group">
                                 <label for="ext_ctv">12.1 - Transporte de Valores - CTV *</label>
                                 <select id="ext_ctv" name="ext_ctv" required>
-                                    <option value="SIM">Sim</option>
+                                    <option value="SIM" {% if (form_data or {}).get('escolaridade') == 'SIM' or (form_data or {}).get('possui_cfv') == 'SIM' %}selected{% endif %}>Sim</option>
                                     <option value="NAO" selected>Não</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="ext_cea">12.2 - Escolta Armada - CEA *</label>
                                 <select id="ext_cea" name="ext_cea" required>
-                                    <option value="SIM">Sim</option>
+                                    <option value="SIM" {% if (form_data or {}).get('escolaridade') == 'SIM' or (form_data or {}).get('possui_cfv') == 'SIM' %}selected{% endif %}>Sim</option>
                                     <option value="NAO" selected>Não</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="ext_csp">12.3 - Segurança Pessoal - CSP *</label>
                                 <select id="ext_csp" name="ext_csp" required>
-                                    <option value="SIM">Sim</option>
+                                    <option value="SIM" {% if (form_data or {}).get('escolaridade') == 'SIM' or (form_data or {}).get('possui_cfv') == 'SIM' %}selected{% endif %}>Sim</option>
                                     <option value="NAO" selected>Não</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="ext_cnl1">12.4 - Equipamentos Não Letais I - CNL I *</label>
                                 <select id="ext_cnl1" name="ext_cnl1" required>
-                                    <option value="SIM">Sim</option>
+                                    <option value="SIM" {% if (form_data or {}).get('escolaridade') == 'SIM' or (form_data or {}).get('possui_cfv') == 'SIM' %}selected{% endif %}>Sim</option>
                                     <option value="NAO" selected>Não</option>
                                 </select>
                             </div>
                             <div class="form-group two-columns-span">
                                 <label for="ext_ces">12.5 - Segurança para Eventos Sociais - CES *</label>
                                 <select id="ext_ces" name="ext_ces" required>
-                                    <option value="SIM">Sim</option>
+                                    <option value="SIM" {% if (form_data or {}).get('escolaridade') == 'SIM' or (form_data or {}).get('possui_cfv') == 'SIM' %}selected{% endif %}>Sim</option>
                                     <option value="NAO" selected>Não</option>
                                 </select>
                             </div>
@@ -219,7 +230,7 @@
                         <div class="form-grid two-columns form-grid-balanced">
                             <div class="form-group" id="reciclagem-data-wrapper">
                                 <label for="data_ultima_reciclagem">13 - Data da última reciclagem *</label>
-                                <input type="date" id="data_ultima_reciclagem" name="data_ultima_reciclagem" required>
+                                <input type="date" id="data_ultima_reciclagem" name="data_ultima_reciclagem" required value="{{ (form_data or {}).get('data_ultima_reciclagem', '') }}">
                             </div>
 
                             <div class="form-group" id="reciclagem-curso-wrapper">
@@ -235,7 +246,7 @@
 
                             <div class="form-group two-columns-span">
                                 <label for="ultima_experiencia_profissional">15 - Última experiência profissional *</label>
-                                <textarea id="ultima_experiencia_profissional" name="ultima_experiencia_profissional" rows="5" required placeholder="Por favor, especifique nome da empresa, período e principais atividades."></textarea>
+                                <textarea id="ultima_experiencia_profissional" name="ultima_experiencia_profissional" rows="5" required placeholder="Por favor, especifique nome da empresa, período e principais atividades.">{{ (form_data or {}).get('ultima_experiencia_profissional', '') }}</textarea>
                             </div>
                         </div>
                     </section>
@@ -263,7 +274,7 @@
                             <div class="form-group two-columns-span registration-captcha-block">
                                 <label for="captcha_resposta">CAPTCHA *</label>
                                 <p class="form-help">{{ captcha_question }}</p>
-                                <input type="text" id="captcha_resposta" name="captcha_resposta" placeholder="Digite a resposta" required>
+                                <input type="text" id="captcha_resposta" name="captcha_resposta" placeholder="Digite a resposta" required value="{{ (form_data or {}).get('captcha_resposta', '') }}">
                                 <small class="field-help">Responda a conta para concluir o cadastro.</small>
                             </div>
                         </div>
@@ -271,7 +282,7 @@
 
                     <div class="registration-submit-bar top-gap">
                     <label class="form-check lgpd-check">
-                        <input type="checkbox" name="aceite_lgpd" value="1" required>
+                        <input type="checkbox" name="aceite_lgpd" value="1" required {% if (form_data or {}).get('aceite_lgpd') == '1' %}checked{% endif %}>
                         Li e aceito a <a href="{{ url_for('public.privacidade') }}" target="_blank">Política de Privacidade</a> e os <a href="{{ url_for('public.termos') }}" target="_blank">Termos de Uso</a>.
                     </label>
 
@@ -279,6 +290,7 @@
                         <br>
                         <p>Já tem cadastro? <a href="{{ url_for('vigilante.login') }}">Entrar na área do vigilante</a></p>
                     </div>
+                <input type="hidden" data-first-error-field value="{{ first_error_field or '' }}">
                 </form>
             </section>
         </div>
