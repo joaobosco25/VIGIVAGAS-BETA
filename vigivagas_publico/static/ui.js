@@ -137,3 +137,37 @@
   });
 })();
 
+
+
+// Cadastro vigilante: exibe campos de formação/reciclagem sem script inline (CSP segura).
+(function () {
+    const possuiCfv = document.getElementById('possui_cfv');
+    if (!possuiCfv) return;
+    const instituicaoWrapper = document.getElementById('instituicao-wrapper');
+    const instituicaoInput = document.getElementById('instituicao_formacao');
+    const reciclagemDataWrapper = document.getElementById('reciclagem-data-wrapper');
+    const reciclagemCursoWrapper = document.getElementById('reciclagem-curso-wrapper');
+    const reciclagemDataInput = document.getElementById('data_ultima_reciclagem');
+    const reciclagemCursoInput = document.getElementById('curso_ultima_reciclagem');
+
+    function toggleInstituicao() {
+        const show = possuiCfv.value === 'SIM';
+        if (instituicaoWrapper) instituicaoWrapper.style.display = show ? 'block' : 'none';
+        if (instituicaoInput) { instituicaoInput.required = show; if (!show) instituicaoInput.value = ''; }
+        if (reciclagemDataWrapper) reciclagemDataWrapper.style.display = show ? 'block' : 'none';
+        if (reciclagemCursoWrapper) reciclagemCursoWrapper.style.display = show ? 'block' : 'none';
+        if (reciclagemDataInput) { reciclagemDataInput.required = show; if (!show) reciclagemDataInput.value = ''; }
+        if (reciclagemCursoInput) { reciclagemCursoInput.required = show; if (!show) reciclagemCursoInput.value = ''; }
+    }
+
+    possuiCfv.addEventListener('change', toggleInstituicao);
+    toggleInstituicao();
+})();
+
+// Confirmações sem atributo onsubmit inline.
+document.querySelectorAll('[data-confirm-message]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        const message = form.getAttribute('data-confirm-message');
+        if (message && !window.confirm(message)) event.preventDefault();
+    });
+});

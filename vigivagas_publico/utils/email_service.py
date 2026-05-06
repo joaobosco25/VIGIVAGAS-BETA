@@ -24,7 +24,7 @@ def _env_bool(name: str, default: str = "1") -> bool:
 def send_email_token(email_destino: str, token: str) -> tuple[bool, str]:
     """Envia código numérico de validação para o e-mail do recrutador.
 
-    O token é um código de 5 dígitos gerado na rota de recrutador e expira em 15 minutos.
+    O token é um código de 8 dígitos gerado na rota de recrutador, armazenado em hash e expira em 10 minutos.
     Se SMTP não estiver configurado, salva em database/outbox para teste local.
     """
     smtp_host = os.getenv("SMTP_HOST", "").strip()
@@ -40,7 +40,7 @@ def send_email_token(email_destino: str, token: str) -> tuple[bool, str]:
         "Recebemos uma solicitação de cadastro de recrutador no VigiVagas.\n\n"
         f"Seu código de validação é: {token}\n\n"
         "Digite esse código na tela de validação para confirmar seu e-mail.\n"
-        "Este código expira em 15 minutos.\n\n"
+        "Este código expira em 10 minutos.\n\n"
         "Depois da validação do e-mail, o acesso continuará pendente até a análise do Maurício.\n\n"
         "Se você não solicitou esse cadastro, ignore esta mensagem.\n"
     )

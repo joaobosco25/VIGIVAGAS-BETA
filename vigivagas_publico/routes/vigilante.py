@@ -10,6 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from utils.auth import clear_user_sessions, vigilante_required
 from utils.db import get_connection
+from utils.audit import log_action
 from utils.email_service import send_password_reset_link
 from utils.fraud import evaluate_vigilante_risk, get_client_ip, get_user_agent, is_disposable_email, looks_like_test_name
 from utils.validators import (
@@ -524,6 +525,7 @@ def logout():
 @vigilante_bp.route("/meus-dados.json")
 @vigilante_required
 def meus_dados_json():
+    log_action("vigilante", session.get("vigilante_id"), "exportou_meus_dados", "vigilante", session.get("vigilante_id"), "Titular exportou seus próprios dados em JSON")
     import json
     from flask import Response
     conn = get_connection()
@@ -535,6 +537,50 @@ def meus_dados_json():
 
 
 @vigilante_bp.route("/excluir-conta", methods=["POST"])
+@vigilante_required
+def excluir_conta():
+    vigilante_id = session["vigilante_id"]
+    acao = (request.form.get("acao_lgpd") or "anonimizar").strip().lower()
+    confirmacao = (request.form.get("confirmacao_lgpd") or "").strip().upper()
+    senha = request.form.get("senha_atual", "")
+    if acao not in {"desativar", "anonimizar", "excluir"}:
+        flash("Tipo de solicitação LGPD inválido.", "error")
+        return redirect(url_for("vigilante.dashboard", _anchor="configuracoes-conta"))
+    texto_esperado = "DESATIVAR" if acao == "desativar" else "ANONIMIZAR" if acao == "anonimizar" else "EXCLUIR"
+    if confirmacao != texto_esperado:
+        flash(f"Digite {texto_esperado} para confirmar a ação LGPD.", "error")
+        return redirect(url_for("vigilante.dashboard", _anchor="configuracoes-conta"))
+    conn = get_connection()
+    vigilante = conn.execute("SELECT email, password FROM vigilantes WHERE id = ?", (vigilante_id,)).fetchone()
+    if not vigilante or not check_password_hash(vigilante["password"], senha):
+        conn.close()
+        flash("Senha atual inválida. Ação LGPD não executada.", "error")
+        return redirect(url_for("vigilante.dashboard", _anchor="configuracoes-conta"))
+    ip = get_client_ip(request)
+    ua = request.headers.get("User-Agent", "")[:500]
+    if acao == "desativar":
+        conn.execute("UPDATE vigilantes SET status='inativo' WHERE id = ?", (vigilante_id,))
+        status_req = "concluida"
+        detalhes = "Conta desativada pela área logada do vigilante; dados preservados para obrigações legais e segurança."
+        mensagem = "Sua conta foi desativada. Os dados não foram apagados."
+    elif acao == "anonimizar":
+        conn.execute("UPDATE vigilantes SET nome='USUARIO ANONIMIZADO', cpf='ANONIMIZADO-' || id, telefone='', email='anonimizado-' || id || '@vigivagas.local', endereco='', cep='', resumo_profissional='', ultima_experiencia_profissional='', ip_cadastro=NULL, user_agent=NULL, status='excluido' WHERE id = ?", (vigilante_id,))
+        conn.execute("UPDATE candidaturas SET observacoes = COALESCE(observacoes, '') || ' | Conta do vigilante anonimizada por solicitação LGPD.' WHERE vigilante_id = ?", (vigilante_id,))
+        status_req = "concluida"
+        detalhes = "Conta anonimizada pela área logada do vigilante após senha e confirmação forte."
+        mensagem = "Sua conta foi anonimizada conforme solicitação LGPD."
+    else:
+        status_req = "pendente_revisao"
+        detalhes = "Titular solicitou eliminação/exclusão definitiva; pendente de revisão para preservar obrigações legais, auditoria e defesa de direitos."
+        mensagem = "Sua solicitação de exclusão definitiva foi registrada para revisão."
+    conn.execute("""
+        INSERT INTO lgpd_requests (user_type, user_id, email, request_type, status, details, ip_address, user_agent)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, ("vigilante", vigilante_id, (vigilante["email"] if vigilante else ""), acao, status_req, detalhes, ip, ua))
+    conn.commit(); conn.close()
+    clear_user_sessions()
+    flash(mensagem, "success")
+    return redirect(url_for("public.index"))
 @vigilante_required
 def excluir_conta():
     vigilante_id = session["vigilante_id"]

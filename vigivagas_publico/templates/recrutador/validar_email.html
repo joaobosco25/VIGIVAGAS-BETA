@@ -31,10 +31,10 @@
             <section class="auth-aside">
                 <span class="hero-tag">Confirmação de segurança</span>
                 <h2>Valide o e-mail da empresa antes de acessar o painel.</h2>
-                <p>Enviamos um código de 5 números para o e-mail informado no cadastro. Essa etapa evita cadastros falsos e protege as vagas publicadas.</p>
+                <p>Enviamos um código de 8 números para o e-mail informado no cadastro. Essa etapa evita cadastros falsos e protege as vagas publicadas.</p>
                 <ul class="auth-checklist">
-                    <li><strong>Código de 5 números</strong><span>Digite exatamente o código recebido por e-mail.</span></li>
-                    <li><strong>Validade curta</strong><span>O código expira em 15 minutos por segurança.</span></li>
+                    <li><strong>Código de 8 números</strong><span>Digite exatamente o código recebido por e-mail.</span></li>
+                    <li><strong>Validade curta</strong><span>O código expira em 10 minutos por segurança.</span></li>
                     <li><strong>Análise do Maurício</strong><span>Após validar o e-mail, o cadastro ainda precisa ser liberado no painel administrativo.</span></li>
                 </ul>
             </section>
@@ -62,8 +62,8 @@
                     </div>
                     <div class="form-group">
                         <label for="token">Código de validação</label>
-                        <input type="text" id="token" name="token" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" placeholder="00000" required>
-                        <small class="field-help">Digite os 5 números enviados para o e-mail informado no cadastro.</small>
+                        <input type="text" id="token" name="token" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" placeholder="00000000" required>
+                        <small class="field-help">Digite os 8 números enviados para o e-mail informado no cadastro.</small>
                     </div>
                     <button class="btn btn-primary full" type="submit">Validar e-mail</button>
                 </form>

@@ -141,3 +141,21 @@
     });
   });
 })();
+
+
+// Mantém a seção do painel após filtros e ações, sem script inline (compatível com CSP).
+document.querySelectorAll('.preserve-section-form').forEach((form) => {
+    form.addEventListener('submit', () => {
+        const sectionId = form.dataset.targetSection;
+        if (sectionId) sessionStorage.setItem('mauricio_last_section', sectionId);
+    });
+});
+
+window.addEventListener('load', () => {
+    if (window.location.hash) return;
+    const sectionId = sessionStorage.getItem('mauricio_last_section');
+    if (!sectionId) return;
+    const target = document.getElementById(sectionId);
+    if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
+    sessionStorage.removeItem('mauricio_last_section');
+});

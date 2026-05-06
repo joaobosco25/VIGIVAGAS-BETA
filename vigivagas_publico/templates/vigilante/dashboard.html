@@ -300,9 +300,25 @@
                 </div>
                 <div class="settings-actions">
                     <a class="btn btn-secondary" href="{{ url_for('vigilante.meus_dados_json') }}">Exportar meus dados</a>
-                    <form method="POST" action="{{ url_for('vigilante.excluir_conta') }}" onsubmit="return confirm('Confirmar anonimização/exclusão da conta? Esta ação não deve ser feita por teste.');">
+                    <form method="POST" action="{{ url_for('vigilante.excluir_conta') }}" class="candidate-form privacy-danger-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button class="btn btn-danger" type="submit">Excluir/anonimizar conta</button>
+                        <div class="form-group">
+                            <label>Ação LGPD</label>
+                            <select name="acao_lgpd" required>
+                                <option value="desativar">Desativar conta</option>
+                                <option value="anonimizar">Anonimizar dados</option>
+                                <option value="excluir">Solicitar exclusão definitiva</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirmação</label>
+                            <input type="text" name="confirmacao_lgpd" placeholder="Digite DESATIVAR, ANONIMIZAR ou EXCLUIR" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Senha atual</label>
+                            <input type="password" name="senha_atual" required>
+                        </div>
+                        <button class="btn btn-danger" type="submit">Confirmar ação LGPD</button>
                     </form>
                 </div>
             </section>

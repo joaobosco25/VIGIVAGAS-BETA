@@ -10,11 +10,32 @@ from utils.auth import mauricio_required
 from utils.db import get_connection
 from utils.audit import log_action
 from utils.validators import normalize_upper
+from utils.privacy import mask_cnpj, mask_email, mask_ip, mask_phone
 
 STATUS_RECRUTADOR = {"pendente", "validado", "verificado"}
 STATUS_ANTIFRAUDE = {"normal", "suspeito", "bloqueado"}
 
 mauricio_bp = Blueprint("mauricio", __name__, url_prefix="/mauricio")
+
+
+def _dashboard_redirect(anchor: str = ""):
+    params = request.args.to_dict(flat=True)
+    target = url_for("mauricio.dashboard", **params)
+    return redirect(f"{target}#{anchor}" if anchor else target)
+
+
+def _require_mauricio_password() -> bool:
+    senha = request.form.get("mauricio_password", "")
+    if not senha:
+        flash("Informe sua senha do painel para confirmar esta ação sensível.", "error")
+        return False
+    conn = get_connection()
+    usuario = conn.execute("SELECT password FROM mauricio_usuarios WHERE id = ? AND ativo = 1", (session.get("mauricio_id"),)).fetchone()
+    conn.close()
+    if not usuario or not check_password_hash(usuario["password"], senha):
+        flash("Senha do painel inválida. Ação não executada.", "error")
+        return False
+    return True
 
 
 def _build_workbook(sheet_name: str, headers: list[str], rows: list[list]):
@@ -272,6 +293,7 @@ def login():
 @mauricio_bp.route("/dashboard")
 @mauricio_required
 def dashboard():
+    log_action("mauricio", session.get("mauricio_id"), "acessou_dashboard", "painel", None, "Acesso ao painel administrativo com dados pessoais mascarados")
     resumo, recrutadores, vigilantes, vagas, candidaturas, filtros, limites, audit_logs, lgpd_requests, oportunidades_encerradas = _fetch_dashboard_data(request.args)
     next_links = {
         "recrutadores": _build_next_link(request.args, "r_limit", 10, "secao-recrutadores"),
@@ -292,6 +314,10 @@ def dashboard():
         audit_logs=audit_logs,
         lgpd_requests=lgpd_requests,
         oportunidades_encerradas=oportunidades_encerradas,
+        mask_email=mask_email,
+        mask_phone=mask_phone,
+        mask_ip=mask_ip,
+        mask_cnpj=mask_cnpj,
     )
 
 
@@ -299,9 +325,9 @@ def dashboard():
 @mauricio_required
 def exportar_recrutadores():
     _, recrutadores, _, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
-    rows = [[r["id"], r["nome_responsavel"], r["nome_empresa"], r["email"], r["telefone"], r["cidade"], r["estado"], r["cnpj"], r["razao_social"], r["situacao_cadastral"], r["email_verificado"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["created_at"]] for r in recrutadores]
-    output = _build_workbook("Recrutadores", ["ID", "Responsável", "Empresa", "E-mail", "Telefone", "Cidade", "Estado", "CNPJ", "Razão Social", "Situação Cadastral", "E-mail Verificado", "Status", "Antifraude", "Score", "Flags", "Criado em"], rows)
-    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "recrutadores", None, f"Exportação de recrutadores.xlsx com {len(rows)} linhas")
+    rows = [[r["id"], r["nome_responsavel"], r["nome_empresa"], mask_email(r["email"]), mask_phone(r["telefone"]), r["cidade"], r["estado"], mask_cnpj(r["cnpj"]), r["razao_social"], r["situacao_cadastral"], r["email_verificado"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["created_at"]] for r in recrutadores]
+    output = _build_workbook("Recrutadores", ["ID", "Responsável", "Empresa", "E-mail mascarado", "Telefone mascarado", "Cidade", "Estado", "CNPJ mascarado", "Razão Social", "Situação Cadastral", "E-mail Verificado", "Status", "Antifraude", "Score", "Flags", "Criado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "recrutadores", None, f"Exportação de recrutadores.xlsx com {len(rows)} linhas; e-mail, telefone e CNPJ mascarados")
     return send_file(output, as_attachment=True, download_name="vigivagas_recrutadores.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -309,9 +335,9 @@ def exportar_recrutadores():
 @mauricio_required
 def exportar_vigilantes():
     _, _, vigilantes, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
-    rows = [[r["id"], r["nome"], r["cidade"], r["estado"], r["cep"], r["endereco"], r["email"], r["telefone"], r["escolaridade"], r["possui_cfv"], r["instituicao_formacao"], r["data_ultima_reciclagem"], r["curso_ultima_reciclagem"], r["ultima_experiencia_profissional"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["created_at"]] for r in vigilantes]
-    output = _build_workbook("Vigilantes", ["ID", "Nome", "Cidade", "Estado", "CEP", "Endereço", "E-mail", "Telefone", "Escolaridade", "Possui CFV", "Instituição de Formação", "Data Última Reciclagem", "Curso Última Reciclagem", "Última Experiência", "Status", "Antifraude", "Score", "Flags", "Criado em"], rows)
-    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "vigilantes", None, f"Exportação de vigilantes.xlsx com {len(rows)} linhas")
+    rows = [[r["id"], r["nome"], r["cidade"], r["estado"], "REMOVIDO", "REMOVIDO", mask_email(r["email"]), mask_phone(r["telefone"]), r["escolaridade"], r["possui_cfv"], r["instituicao_formacao"], r["data_ultima_reciclagem"], r["curso_ultima_reciclagem"], r["ultima_experiencia_profissional"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["created_at"]] for r in vigilantes]
+    output = _build_workbook("Vigilantes", ["ID", "Nome", "Cidade", "Estado", "CEP", "Endereço", "E-mail mascarado", "Telefone mascarado", "Escolaridade", "Possui CFV", "Instituição de Formação", "Data Última Reciclagem", "Curso Última Reciclagem", "Última Experiência", "Status", "Antifraude", "Score", "Flags", "Criado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "vigilantes", None, f"Exportação de vigilantes.xlsx com {len(rows)} linhas; contato mascarado e endereço removido")
     return send_file(output, as_attachment=True, download_name="vigivagas_vigilantes.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -329,9 +355,9 @@ def exportar_vagas():
 @mauricio_required
 def exportar_candidaturas():
     _, _, _, _, candidaturas, _, _, _, _, _ = _fetch_dashboard_data(request.args)
-    rows = [[r["id"], r["vigilante_nome"], r["vigilante_email"], r["vigilante_telefone"], r["vigilante_cidade"], r["vigilante_estado"], r["vaga_id"], r["vaga_titulo"], r["vaga_empresa"], r["vaga_cidade"], r["vaga_estado"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
-    output = _build_workbook("Candidaturas", ["ID", "Vigilante", "E-mail", "Telefone", "Cidade Vigilante", "Estado Vigilante", "Vaga ID", "Título da Vaga", "Empresa", "Cidade da Vaga", "Estado da Vaga", "Status", "Observações", "Criado em", "Atualizado em"], rows)
-    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "candidaturas", None, f"Exportação de candidaturas.xlsx com {len(rows)} linhas")
+    rows = [[r["id"], r["vigilante_nome"], mask_email(r["vigilante_email"]), mask_phone(r["vigilante_telefone"]), r["vigilante_cidade"], r["vigilante_estado"], r["vaga_id"], r["vaga_titulo"], r["vaga_empresa"], r["vaga_cidade"], r["vaga_estado"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
+    output = _build_workbook("Candidaturas", ["ID", "Vigilante", "E-mail mascarado", "Telefone mascarado", "Cidade Vigilante", "Estado Vigilante", "Vaga ID", "Título da Vaga", "Empresa", "Cidade da Vaga", "Estado da Vaga", "Status", "Observações", "Criado em", "Atualizado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "candidaturas", None, f"Exportação de candidaturas.xlsx com {len(rows)} linhas; contatos mascarados e CPF ausente")
     return send_file(output, as_attachment=True, download_name="vigivagas_candidaturas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -356,8 +382,8 @@ def exportar_candidaturas_vaga(vaga_id: int):
         (vaga_id,),
     ).fetchall()
     conn.close()
-    rows = [[r["id"], r["nome"], r["telefone"], r["email"], r["cidade"], r["curso"], r["reciclagem"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
-    output = _build_workbook("Candidaturas", ["Candidatura ID", "Nome", "Telefone", "E-mail", "Cidade", "Curso", "Reciclagem", "Status", "Observações", "Criado em", "Atualizado em"], rows)
+    rows = [[r["id"], r["nome"], mask_phone(r["telefone"]), mask_email(r["email"]), r["cidade"], r["curso"], r["reciclagem"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
+    output = _build_workbook("Candidaturas", ["Candidatura ID", "Nome", "Telefone mascarado", "E-mail mascarado", "Cidade", "Curso", "Reciclagem", "Status", "Observações", "Criado em", "Atualizado em"], rows)
     log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "candidaturas_vaga", vaga_id, f"Exportação de candidaturas da vaga {vaga_id} com {len(rows)} linhas; CPF removido da planilha")
     return send_file(output, as_attachment=True, download_name=f"vigivagas_vaga_{vaga_id}_candidaturas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
@@ -368,7 +394,9 @@ def atualizar_status_recrutador(recrutador_id: int):
     novo_status = request.form.get("status", "").strip().lower()
     if novo_status not in STATUS_RECRUTADOR:
         flash("Status de recrutador inválido.", "error")
-        return redirect(url_for("mauricio.dashboard", **request.args))
+        return _dashboard_redirect("secao-recrutadores")
+    if not _require_mauricio_password():
+        return _dashboard_redirect("secao-recrutadores")
     conn = get_connection()
     recrutador = conn.execute("SELECT id, nome_empresa, nome_responsavel FROM recrutadores WHERE id = ?", (recrutador_id,)).fetchone()
     if not recrutador:
@@ -380,7 +408,7 @@ def atualizar_status_recrutador(recrutador_id: int):
     conn.close()
     log_action("mauricio", session.get("mauricio_id"), "alterou_status_recrutador", "recrutador", recrutador_id, f"Novo status: {novo_status}")
     flash(f"Status de {recrutador['nome_responsavel']} / {recrutador['nome_empresa'] or 'SEM EMPRESA'} alterado para {novo_status.upper()}.", "success")
-    return redirect(url_for("mauricio.dashboard"))
+    return _dashboard_redirect("secao-recrutadores")
 
 
 @mauricio_bp.route("/recrutadores/<int:recrutador_id>/antifraude", methods=["POST"])
@@ -389,7 +417,9 @@ def atualizar_antifraude_recrutador(recrutador_id: int):
     novo_status = request.form.get("antifraude_status", "").strip().lower()
     if novo_status not in STATUS_ANTIFRAUDE:
         flash("Status antifraude do recrutador inválido.", "error")
-        return redirect(url_for("mauricio.dashboard"))
+        return _dashboard_redirect("secao-recrutadores")
+    if not _require_mauricio_password():
+        return _dashboard_redirect("secao-recrutadores")
     conn = get_connection()
     recrutador = conn.execute("SELECT id, nome_empresa, nome_responsavel FROM recrutadores WHERE id = ?", (recrutador_id,)).fetchone()
     if not recrutador:
@@ -401,7 +431,7 @@ def atualizar_antifraude_recrutador(recrutador_id: int):
     conn.close()
     log_action("mauricio", session.get("mauricio_id"), "alterou_antifraude_recrutador", "recrutador", recrutador_id, f"Novo antifraude: {novo_status}")
     flash(f"Antifraude de {recrutador['nome_responsavel']} / {recrutador['nome_empresa'] or 'SEM EMPRESA'} alterado para {novo_status.upper()}.", "success")
-    return redirect(url_for("mauricio.dashboard"))
+    return _dashboard_redirect("secao-recrutadores")
 
 
 @mauricio_bp.route("/vigilantes/<int:vigilante_id>/antifraude", methods=["POST"])
@@ -410,7 +440,9 @@ def atualizar_antifraude_vigilante(vigilante_id: int):
     novo_status = request.form.get("antifraude_status", "").strip().lower()
     if novo_status not in STATUS_ANTIFRAUDE:
         flash("Status antifraude do vigilante inválido.", "error")
-        return redirect(url_for("mauricio.dashboard"))
+        return _dashboard_redirect("secao-vigilantes")
+    if not _require_mauricio_password():
+        return _dashboard_redirect("secao-vigilantes")
     conn = get_connection()
     vigilante = conn.execute("SELECT id, nome, email FROM vigilantes WHERE id = ?", (vigilante_id,)).fetchone()
     if not vigilante:
@@ -422,7 +454,7 @@ def atualizar_antifraude_vigilante(vigilante_id: int):
     conn.close()
     log_action("mauricio", session.get("mauricio_id"), "alterou_antifraude_vigilante", "vigilante", vigilante_id, f"Novo antifraude: {novo_status}")
     flash(f"Antifraude de {vigilante['nome']} / {vigilante['email']} alterado para {novo_status.upper()}.", "success")
-    return redirect(url_for("mauricio.dashboard"))
+    return _dashboard_redirect("secao-vigilantes")
 
 
 @mauricio_bp.route("/logout", methods=["POST"])

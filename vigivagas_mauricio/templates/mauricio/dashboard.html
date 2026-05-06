@@ -115,16 +115,16 @@
                 <tr>
                     <td>{{ item['id'] }}</td>
                     <td>{{ item['nome_responsavel'] }}<br><small>{{ item['nome_empresa'] or '-' }}</small></td>
-                    <td>{{ item['email'] }}<br><small>{{ item['telefone'] or '-' }}</small></td>
+                    <td>{{ mask_email(item['email']) }}<br><small>{{ mask_phone(item['telefone']) }}</small></td>
                     <td><span class="status-pill status-pill-{{ item['status']|replace(' ', '-')|lower }}">{{ item['status'] }}</span><br><small>Email verificado: {{ 'SIM' if item['email_verificado'] else 'NÃO' }}</small></td>
                     <td><span class="status-pill status-pill-{{ item['antifraude_status']|replace(' ', '-')|lower }}">{{ item['antifraude_status'] }}</span><br><small>Score {{ item['antifraude_score'] or 0 }}</small></td>
                     <td><small>{{ item['antifraude_flags'] or '-' }}</small></td>
-                    <td><small>{{ item['ip_cadastro'] or '-' }}</small><br><small>{{ item['created_at'] }}</small></td>
+                    <td><small>{{ mask_ip(item['ip_cadastro']) }}</small><br><small>{{ item['created_at'] }}</small></td>
                     <td>
                         <form method="POST" action="{{ url_for('mauricio.atualizar_status_recrutador', recrutador_id=item['id']) }}" class="candidate-form status-form" style="margin-bottom:.5rem;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="status"><option value="pendente" {% if item['status']|lower == 'pendente' %}selected{% endif %}>PENDENTE</option><option value="validado" {% if item['status']|lower in ['validado','ativo'] %}selected{% endif %}>VALIDADO</option><option value="verificado" {% if item['status']|lower == 'verificado' %}selected{% endif %}>VERIFICADO</option></select><button class="btn btn-secondary" type="submit">Salvar</button></div></form>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="status"><option value="pendente" {% if item['status']|lower == 'pendente' %}selected{% endif %}>PENDENTE</option><option value="validado" {% if item['status']|lower in ['validado','ativo'] %}selected{% endif %}>VALIDADO</option><option value="verificado" {% if item['status']|lower == 'verificado' %}selected{% endif %}>VERIFICADO</option></select><input type="password" name="mauricio_password" placeholder="Senha" required style="max-width:120px;"><button class="btn btn-secondary" type="submit">Salvar</button></div></form>
                         <form method="POST" action="{{ url_for('mauricio.atualizar_antifraude_recrutador', recrutador_id=item['id']) }}" class="candidate-form status-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="antifraude_status"><option value="normal" {% if item['antifraude_status']|lower == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if item['antifraude_status']|lower == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if item['antifraude_status']|lower == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select><button class="btn btn-secondary" type="submit">Salvar</button></div></form>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="antifraude_status"><option value="normal" {% if item['antifraude_status']|lower == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if item['antifraude_status']|lower == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if item['antifraude_status']|lower == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select><input type="password" name="mauricio_password" placeholder="Senha" required style="max-width:120px;"><button class="btn btn-secondary" type="submit">Salvar</button></div></form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -153,14 +153,14 @@
                 <tr>
                     <td>{{ item['id'] }}</td>
                     <td>{{ item['nome'] }}<br><small>{{ item['cidade'] or '-' }}</small></td>
-                    <td>{{ item['email'] }}<br><small>{{ item['telefone'] }}</small></td>
-                    <td>{{ item['cidade'] or '-' }}{% if item['estado'] %}/{{ item['estado'] }}{% endif %}<br><small>{{ item['cep'] or '-' }} · {{ item['endereco'] or '-' }}</small></td>
+                    <td>{{ mask_email(item['email']) }}<br><small>{{ mask_phone(item['telefone']) }}</small></td>
+                    <td>{{ item['cidade'] or '-' }}{% if item['estado'] %}/{{ item['estado'] }}{% endif %}<br><small>CEP/Endereço ocultos</small></td>
                     <td>{{ item['escolaridade'] or '-' }}<br><small>CFV: {{ item['possui_cfv'] or '-' }}{% if item['instituicao_formacao'] %} · {{ item['instituicao_formacao'] }}{% endif %}</small></td>
                     <td>{{ item['data_ultima_reciclagem'] or '-' }}<br><small>{{ item['curso_ultima_reciclagem'] or '-' }}</small></td>
                     <td><span class="status-pill status-pill-{{ item['status']|replace(' ', '-')|lower }}">{{ item['status'] }}</span></td>
                     <td><span class="status-pill status-pill-{{ item['antifraude_status']|replace(' ', '-')|lower }}">{{ item['antifraude_status'] }}</span><br><small>Score {{ item['antifraude_score'] or 0 }}</small><br><small>{{ item['antifraude_flags'] or '-' }}</small></td>
                     <td><form method="POST" action="{{ url_for('mauricio.atualizar_antifraude_vigilante', vigilante_id=item['id']) }}" class="candidate-form status-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="antifraude_status"><option value="normal" {% if item['antifraude_status']|lower == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if item['antifraude_status']|lower == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if item['antifraude_status']|lower == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select><button class="btn btn-secondary" type="submit">Salvar</button></div></form></td>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="inline-form-group"><select name="antifraude_status"><option value="normal" {% if item['antifraude_status']|lower == 'normal' %}selected{% endif %}>NORMAL</option><option value="suspeito" {% if item['antifraude_status']|lower == 'suspeito' %}selected{% endif %}>SUSPEITO</option><option value="bloqueado" {% if item['antifraude_status']|lower == 'bloqueado' %}selected{% endif %}>BLOQUEADO</option></select><input type="password" name="mauricio_password" placeholder="Senha" required style="max-width:120px;"><button class="btn btn-secondary" type="submit">Salvar</button></div></form></td>
                 </tr>
                 {% endfor %}
                 </tbody></table></div>
@@ -202,7 +202,7 @@
                 <tr>
                     <td>{{ item['id'] }}</td>
                     <td><strong>{{ item['titulo'] }}</strong><br><small>Criada em {{ item['created_at'] }}</small></td>
-                    <td>{{ item['empresa'] }}<br><small>{{ item['nome_responsavel'] or '-' }} · {{ item['recrutador_email'] or '-' }}</small></td>
+                    <td>{{ item['empresa'] }}<br><small>{{ item['nome_responsavel'] or '-' }} · {{ mask_email(item['recrutador_email']) }}</small></td>
                     <td>{{ item['cidade'] }}/{{ item['estado'] }}</td>
                     <td><span class="status-pill status-pill-encerrada">{{ item['encerrada_motivo_tipo'] or 'encerrada' }}</span><br><small>{{ item['encerrada_motivo'] or item['encerrada_observacoes'] or '-' }}</small></td>
                     <td>{{ item['vigivagas_ajudou_contratacao'] or 'não informado' }}</td>
@@ -231,7 +231,7 @@
                 {% if candidaturas %}
                 <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Vigilante</th><th>Vaga</th><th>Cidade</th><th>Status</th><th>Observações</th><th>Data</th></tr></thead><tbody>
                 {% for item in candidaturas %}
-                <tr><td>{{ item['id'] }}</td><td>{{ item['vigilante_nome'] }}<br><small>{{ item['vigilante_email'] }}</small></td><td>{{ item['vaga_titulo'] }}<br><small>{{ item['vaga_empresa'] }}</small></td><td>{{ item['vigilante_cidade'] or item['vaga_cidade'] or '-' }}{% if item['vigilante_estado'] or item['vaga_estado'] %}/{{ item['vigilante_estado'] or item['vaga_estado'] }}{% endif %}</td><td><span class="status-pill">{{ item['status'] }}</span></td><td><small>{{ item['observacoes'] or '-' }}</small></td><td><small>{{ item['created_at'] }}</small></td></tr>
+                <tr><td>{{ item['id'] }}</td><td>{{ item['vigilante_nome'] }}<br><small>{{ mask_email(item['vigilante_email']) }}</small></td><td>{{ item['vaga_titulo'] }}<br><small>{{ item['vaga_empresa'] }}</small></td><td>{{ item['vigilante_cidade'] or item['vaga_cidade'] or '-' }}{% if item['vigilante_estado'] or item['vaga_estado'] %}/{{ item['vigilante_estado'] or item['vaga_estado'] }}{% endif %}</td><td><span class="status-pill">{{ item['status'] }}</span></td><td><small>{{ item['observacoes'] or '-' }}</small></td><td><small>{{ item['created_at'] }}</small></td></tr>
                 {% endfor %}
                 </tbody></table></div>
                 {% else %}<div class="empty-state">Nenhuma candidatura encontrada para os filtros aplicados.</div>{% endif %}
@@ -245,7 +245,7 @@
                 {% if lgpd_requests %}
                 <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>ID</th><th>Usuário</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>IP</th><th>Data</th></tr></thead><tbody>
                 {% for item in lgpd_requests %}
-                <tr><td>{{ item['id'] }}</td><td>{{ item['user_type'] }} #{{ item['user_id'] or '-' }}</td><td>{{ item['email'] }}</td><td>{{ item['request_type'] }}</td><td><span class="status-pill">{{ item['status'] }}</span></td><td><small>{{ item['ip_address'] or '-' }}</small></td><td><small>{{ item['created_at'] }}</small></td></tr>
+                <tr><td>{{ item['id'] }}</td><td>{{ item['user_type'] }} #{{ item['user_id'] or '-' }}</td><td>{{ mask_email(item['email']) }}</td><td>{{ item['request_type'] }}</td><td><span class="status-pill">{{ item['status'] }}</span></td><td><small>{{ mask_ip(item['ip_address']) }}</small></td><td><small>{{ item['created_at'] }}</small></td></tr>
                 {% endfor %}
                 </tbody></table></div>
                 {% else %}<div class="empty-state">Nenhuma solicitação LGPD registrada até agora.</div>{% endif %}
@@ -258,7 +258,7 @@
                 {% if audit_logs %}
                 <div class="table-wrap table-compact"><table class="data-table"><thead><tr><th>Data</th><th>Ator</th><th>Ação</th><th>Entidade</th><th>Detalhes</th><th>IP</th></tr></thead><tbody>
                 {% for item in audit_logs %}
-                <tr><td><small>{{ item['created_at'] }}</small></td><td>{{ item['actor_type'] }} #{{ item['actor_id'] }}</td><td>{{ item['action'] }}</td><td>{{ item['entity_type'] }} #{{ item['entity_id'] }}</td><td><small>{{ item['details'] or '-' }}</small></td><td><small>{{ item['ip_address'] or '-' }}</small></td></tr>
+                <tr><td><small>{{ item['created_at'] }}</small></td><td>{{ item['actor_type'] }} #{{ item['actor_id'] }}</td><td>{{ item['action'] }}</td><td>{{ item['entity_type'] }} #{{ item['entity_id'] }}</td><td><small>{{ item['details'] or '-' }}</small></td><td><small>{{ mask_ip(item['ip_address']) }}</small></td></tr>
                 {% endfor %}
                 </tbody></table></div>
                 {% else %}<div class="empty-state">Nenhum log administrativo registrado até agora.</div>{% endif %}
@@ -267,27 +267,6 @@
         </div>
     </main>
 
-    <script>
-        document.querySelectorAll('.preserve-section-form').forEach((form) => {
-            form.addEventListener('submit', () => {
-                const sectionId = form.dataset.targetSection;
-                if (sectionId) {
-                    sessionStorage.setItem('mauricio_last_section', sectionId);
-                }
-            });
-        });
-
-        window.addEventListener('load', () => {
-            if (window.location.hash) return;
-            const sectionId = sessionStorage.getItem('mauricio_last_section');
-            if (!sectionId) return;
-            const target = document.getElementById(sectionId);
-            if (target) {
-                setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
-            }
-            sessionStorage.removeItem('mauricio_last_section');
-        });
-    </script>
     <script src="{{ url_for('static', filename='ui.js') }}"></script>
 </body>
 </html>

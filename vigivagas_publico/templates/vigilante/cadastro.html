@@ -284,34 +284,6 @@
         </div>
     </main>
 
-    <script>
-        const possuiCfv = document.getElementById('possui_cfv');
-        const instituicaoWrapper = document.getElementById('instituicao-wrapper');
-        const instituicaoInput = document.getElementById('instituicao_formacao');
-        const reciclagemDataWrapper = document.getElementById('reciclagem-data-wrapper');
-        const reciclagemCursoWrapper = document.getElementById('reciclagem-curso-wrapper');
-        const reciclagemDataInput = document.getElementById('data_ultima_reciclagem');
-        const reciclagemCursoInput = document.getElementById('curso_ultima_reciclagem');
-
-        function toggleInstituicao() {
-            const show = possuiCfv.value === 'SIM';
-            instituicaoWrapper.style.display = show ? 'block' : 'none';
-            instituicaoInput.required = show;
-            if (!show) instituicaoInput.value = '';
-
-            reciclagemDataWrapper.style.display = show ? 'block' : 'none';
-            reciclagemCursoWrapper.style.display = show ? 'block' : 'none';
-            reciclagemDataInput.required = show;
-            reciclagemCursoInput.required = show;
-            if (!show) {
-                reciclagemDataInput.value = '';
-                reciclagemCursoInput.value = '';
-            }
-        }
-
-        possuiCfv.addEventListener('change', toggleInstituicao);
-        toggleInstituicao();
-    </script>
     <script src="{{ url_for('static', filename='address-autofill.js') }}"></script>
     <script src="{{ url_for('static', filename='ui.js') }}"></script>
 </body>

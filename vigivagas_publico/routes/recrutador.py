@@ -2,7 +2,6 @@ import hashlib
 import os
 import secrets
 from datetime import datetime, timedelta
-from secrets import randbelow
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -11,6 +10,7 @@ from utils.auth import clear_user_sessions, recrutador_required
 from utils.captcha import generate_captcha, verify_captcha
 from utils.cnpj_service import consultar_cnpj
 from utils.db import get_connection
+from utils.audit import log_action
 from utils.fraud import evaluate_recrutador_risk, get_client_ip, get_user_agent, is_disposable_email, looks_like_test_company, looks_like_test_name
 from utils.email_service import send_email_token, send_password_reset_link
 from utils.validators import (
@@ -97,10 +97,14 @@ def _can_manage_vagas(raw_status: str | None) -> bool:
     return _resolve_recrutador_status(raw_status) in {"validado", "verificado"}
 
 
+def _hash_email_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def _generate_email_token() -> tuple[str, str]:
-    # Código numérico de 5 dígitos para validação por e-mail.
-    token = f"{randbelow(100000):05d}"
-    expires_at = (datetime.utcnow() + timedelta(minutes=15)).isoformat()
+    # Código numérico de 8 dígitos: reduz risco de brute force comparado ao antigo código de 5 dígitos.
+    token = f"{secrets.randbelow(100000000):08d}"
+    expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
     return token, expires_at
 
 
@@ -115,7 +119,7 @@ def _emitir_token_para_recrutador(conn, recrutador_id: int, email: str) -> str:
             email_verificado = 0
         WHERE id = ?
         """,
-        (token, expires_at, datetime.utcnow().isoformat(), recrutador_id),
+        (_hash_email_token(token), expires_at, datetime.utcnow().isoformat(), recrutador_id),
     )
     conn.commit()
     _, mensagem_envio = send_email_token(email, token)
@@ -295,7 +299,7 @@ def cadastro():
         conn.close()
         session["recrutador_cadastro_concluido"] = True
         flash(cnpj_msg, "info")
-        flash("Cadastro de recrutador enviado com sucesso. Enviamos um código de 5 números para validar seu e-mail.", "success")
+        flash("Cadastro de recrutador enviado com sucesso. Enviamos um código de 8 números para validar seu e-mail.", "success")
         if antifraude_status == "suspeito":
             flash("O cadastro da empresa foi sinalizado para revisão preventiva de segurança.", "info")
         flash(mensagem_envio, "info")
@@ -317,7 +321,7 @@ def validar_email():
         return redirect(url_for("recrutador.validar_email"))
 
     if not token or len(token) != 5 or not token.isdigit():
-        flash("Informe o código de 5 números enviado para o e-mail.", "error")
+        flash("Informe o código de 8 números enviado para o e-mail.", "error")
         return redirect(url_for("recrutador.validar_email", email=email))
 
     conn = get_connection()
@@ -340,7 +344,7 @@ def validar_email():
         flash("Este e-mail já está validado. Faça login para continuar.", "info")
         return redirect(url_for("recrutador.login"))
 
-    if (recrutador["email_token"] or "").strip() != token:
+    if (recrutador["email_token"] or "").strip() != _hash_email_token(token):
         conn.close()
         flash("Código de validação inválido.", "error")
         return redirect(url_for("recrutador.validar_email", email=email))
@@ -930,6 +934,7 @@ def logout():
 @recrutador_bp.route("/meus-dados.json")
 @recrutador_required
 def meus_dados_json():
+    log_action("recrutador", session.get("recrutador_id"), "exportou_meus_dados", "recrutador", session.get("recrutador_id"), "Titular/recrutador exportou seus próprios dados em JSON")
     import json
     from flask import Response
     conn = get_connection()
@@ -944,17 +949,45 @@ def meus_dados_json():
 @recrutador_required
 def excluir_conta():
     recrutador_id = session["recrutador_id"]
+    acao = (request.form.get("acao_lgpd") or "anonimizar").strip().lower()
+    confirmacao = (request.form.get("confirmacao_lgpd") or "").strip().upper()
+    senha = request.form.get("senha_atual", "")
+    if acao not in {"desativar", "anonimizar", "excluir"}:
+        flash("Tipo de solicitação LGPD inválido.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="configuracoes-conta"))
+    texto_esperado = "DESATIVAR" if acao == "desativar" else "ANONIMIZAR" if acao == "anonimizar" else "EXCLUIR"
+    if confirmacao != texto_esperado:
+        flash(f"Digite {texto_esperado} para confirmar a ação LGPD.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="configuracoes-conta"))
     conn = get_connection()
-    recrutador = conn.execute("SELECT email FROM recrutadores WHERE id = ?", (recrutador_id,)).fetchone()
+    recrutador = conn.execute("SELECT email, password FROM recrutadores WHERE id = ?", (recrutador_id,)).fetchone()
+    if not recrutador or not check_password_hash(recrutador["password"], senha):
+        conn.close()
+        flash("Senha atual inválida. Ação LGPD não executada.", "error")
+        return redirect(url_for("recrutador.dashboard", _anchor="configuracoes-conta"))
     ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
+    if acao == "desativar":
+        conn.execute("UPDATE vagas SET status='inativa' WHERE recrutador_id = ?", (recrutador_id,))
+        conn.execute("UPDATE recrutadores SET status='inativo' WHERE id = ?", (recrutador_id,))
+        status_req = "concluida"
+        detalhes = "Conta de recrutador desativada; vagas inativadas; dados preservados para obrigações legais e segurança."
+        mensagem = "Conta de recrutador desativada e vagas inativadas."
+    elif acao == "anonimizar":
+        conn.execute("UPDATE vagas SET status='inativa' WHERE recrutador_id = ?", (recrutador_id,))
+        conn.execute("UPDATE recrutadores SET nome_empresa='EMPRESA ANONIMIZADA', nome_responsavel='RESPONSAVEL ANONIMIZADO', email='anonimizado-' || id || '@vigivagas.local', telefone='', cnpj='', razao_social='', site_empresa='', descricao_empresa='', ip_cadastro=NULL, user_agent=NULL, status='excluido' WHERE id = ?", (recrutador_id,))
+        status_req = "concluida"
+        detalhes = "Conta de recrutador anonimizada após senha e confirmação forte; vagas desativadas."
+        mensagem = "Conta de recrutador anonimizada e vagas desativadas conforme solicitação LGPD."
+    else:
+        status_req = "pendente_revisao"
+        detalhes = "Titular solicitou eliminação/exclusão definitiva; pendente de revisão para preservar obrigações legais, auditoria e defesa de direitos."
+        mensagem = "Sua solicitação de exclusão definitiva foi registrada para revisão."
     conn.execute("""
         INSERT INTO lgpd_requests (user_type, user_id, email, request_type, status, details, ip_address, user_agent)
-        VALUES (?, ?, ?, 'exclusao_anonimizacao', 'concluida', 'Solicitação feita pela área logada do recrutador; vagas desativadas.', ?, ?)
-    """, ("recrutador", recrutador_id, (recrutador["email"] if recrutador else ""), ip, ua))
-    conn.execute("UPDATE vagas SET status='inativa' WHERE recrutador_id = ?", (recrutador_id,))
-    conn.execute("UPDATE recrutadores SET nome_empresa='EMPRESA ANONIMIZADA', nome_responsavel='RESPONSAVEL ANONIMIZADO', email='anonimizado-' || id || '@vigivagas.local', telefone='', cnpj='', razao_social='', site_empresa='', descricao_empresa='', status='excluido' WHERE id = ?", (recrutador_id,))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, ("recrutador", recrutador_id, (recrutador["email"] if recrutador else ""), acao, status_req, detalhes, ip, ua))
     conn.commit(); conn.close()
     clear_user_sessions()
-    flash("Conta de recrutador anonimizada e vagas desativadas conforme solicitação LGPD.", "success")
+    flash(mensagem, "success")
     return redirect(url_for("public.index"))
