@@ -124,7 +124,7 @@ def _emitir_token_para_recrutador(conn, recrutador_id: int, email: str) -> str:
 
 def _registrar_consentimento_lgpd(conn, user_type: str, user_id, email: str):
     texto = "Aceite da Política de Privacidade e Termos de Uso do VigiVagas."
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
     conn.execute(
         """
@@ -946,7 +946,7 @@ def excluir_conta():
     recrutador_id = session["recrutador_id"]
     conn = get_connection()
     recrutador = conn.execute("SELECT email FROM recrutadores WHERE id = ?", (recrutador_id,)).fetchone()
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
     conn.execute("""
         INSERT INTO lgpd_requests (user_type, user_id, email, request_type, status, details, ip_address, user_agent)

@@ -31,6 +31,10 @@ def _is_active(payload: dict) -> bool:
 
 
 def _fallback_allowed() -> bool:
+    app_env = (os.getenv("APP_ENV", "production") or "production").strip().lower()
+    production_env = app_env in {"beta", "producao", "produção", "production", "prod"}
+    if production_env:
+        return os.getenv("CNPJ_ALLOW_FALLBACK_ON_API_ERROR", "0") == "1"
     return os.getenv("CNPJ_ALLOW_FALLBACK_ON_API_ERROR", "1") == "1"
 
 

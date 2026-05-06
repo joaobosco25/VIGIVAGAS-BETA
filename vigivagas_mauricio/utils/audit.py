@@ -1,10 +1,11 @@
 from datetime import datetime
 from flask import request, session
 from utils.db import get_connection
+from utils.fraud import get_client_ip
 
 
 def log_action(actor_type: str, actor_id, action: str, entity_type: str = "", entity_id=None, details: str = ""):
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
     conn = get_connection()
     conn.execute(

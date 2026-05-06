@@ -24,7 +24,7 @@ public_bp = Blueprint("public", __name__)
 
 def _registrar_consentimento_lgpd(conn, user_type: str, user_id, email: str):
     texto = "Aceite da Política de Privacidade e Termos de Uso do VigiVagas."
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
     conn.execute(
         """

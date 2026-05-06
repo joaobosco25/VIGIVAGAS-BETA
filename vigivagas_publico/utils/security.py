@@ -8,8 +8,13 @@ _RATE_BUCKET = {}
 
 
 def client_ip() -> str:
-    forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
-    return forwarded or request.remote_addr or "0.0.0.0"
+    # Por padrão, não confia em X-Forwarded-For porque esse header pode ser falsificado.
+    # Habilite TRUST_PROXY_HEADERS=1 somente quando houver proxy confiável configurado.
+    if os.getenv("TRUST_PROXY_HEADERS", "0") == "1":
+        forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        if forwarded:
+            return forwarded
+    return request.remote_addr or "0.0.0.0"
 
 
 def csrf_token() -> str:

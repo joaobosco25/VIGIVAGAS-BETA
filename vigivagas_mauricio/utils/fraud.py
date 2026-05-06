@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from flask import Request
+import os
 
 from utils.validators import normalize_email, normalize_upper, only_digits
 
@@ -22,9 +23,12 @@ TEST_WORDS = {
 
 
 def get_client_ip(req: Request) -> str:
-    forwarded = (req.headers.get("X-Forwarded-For") or "").strip()
-    if forwarded:
-        return forwarded.split(",")[0].strip()[:64]
+    # Por padrão, não confia em X-Forwarded-For porque esse header pode ser falsificado.
+    # Habilite TRUST_PROXY_HEADERS=1 somente quando houver proxy confiável configurado.
+    if os.getenv("TRUST_PROXY_HEADERS", "0") == "1":
+        forwarded = (req.headers.get("X-Forwarded-For") or "").strip()
+        if forwarded:
+            return forwarded.split(",")[0].strip()[:64]
     return (req.remote_addr or "").strip()[:64]
 
 

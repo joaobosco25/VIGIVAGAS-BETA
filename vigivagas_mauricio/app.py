@@ -28,8 +28,13 @@ def _assert_safe_runtime() -> None:
     debug = os.getenv("FLASK_DEBUG", "0") == "1"
     app_env = (os.getenv("APP_ENV", "production") or "production").strip().lower()
 
-    if app_env in {"beta", "producao", "produção", "production", "prod"} and debug:
+    production_env = app_env in {"beta", "producao", "produção", "production", "prod"}
+
+    if production_env and debug:
         raise RuntimeError("FLASK_DEBUG precisa estar desligado em beta/produção.")
+
+    if production_env and os.getenv("SESSION_COOKIE_SECURE", "0") != "1":
+        raise RuntimeError("SESSION_COOKIE_SECURE precisa ser 1 em beta/produção.")
 
     database_url = _must_get_env("DATABASE_URL")
 

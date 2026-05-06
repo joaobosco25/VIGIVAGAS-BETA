@@ -79,7 +79,7 @@ def _find_valid_password_reset(conn, user_type: str, token: str):
 
 def _registrar_consentimento_lgpd(conn, user_type: str, user_id, email: str):
     texto = "Aceite da Política de Privacidade e Termos de Uso do VigiVagas."
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
     conn.execute(
         """
@@ -540,7 +540,7 @@ def excluir_conta():
     vigilante_id = session["vigilante_id"]
     conn = get_connection()
     vigilante = conn.execute("SELECT email FROM vigilantes WHERE id = ?", (vigilante_id,)).fetchone()
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")[:500]
     conn.execute("""
         INSERT INTO lgpd_requests (user_type, user_id, email, request_type, status, details, ip_address, user_agent)

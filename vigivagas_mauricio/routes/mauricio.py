@@ -299,8 +299,9 @@ def dashboard():
 @mauricio_required
 def exportar_recrutadores():
     _, recrutadores, _, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
-    rows = [[r["id"], r["nome_responsavel"], r["nome_empresa"], r["email"], r["telefone"], r["cidade"], r["estado"], r["cnpj"], r["razao_social"], r["situacao_cadastral"], r["email_verificado"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["ip_cadastro"], r["created_at"]] for r in recrutadores]
-    output = _build_workbook("Recrutadores", ["ID", "Responsável", "Empresa", "E-mail", "Telefone", "Cidade", "Estado", "CNPJ", "Razão Social", "Situação Cadastral", "E-mail Verificado", "Status", "Antifraude", "Score", "Flags", "IP Cadastro", "Criado em"], rows)
+    rows = [[r["id"], r["nome_responsavel"], r["nome_empresa"], r["email"], r["telefone"], r["cidade"], r["estado"], r["cnpj"], r["razao_social"], r["situacao_cadastral"], r["email_verificado"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["created_at"]] for r in recrutadores]
+    output = _build_workbook("Recrutadores", ["ID", "Responsável", "Empresa", "E-mail", "Telefone", "Cidade", "Estado", "CNPJ", "Razão Social", "Situação Cadastral", "E-mail Verificado", "Status", "Antifraude", "Score", "Flags", "Criado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "recrutadores", None, f"Exportação de recrutadores.xlsx com {len(rows)} linhas")
     return send_file(output, as_attachment=True, download_name="vigivagas_recrutadores.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -308,8 +309,9 @@ def exportar_recrutadores():
 @mauricio_required
 def exportar_vigilantes():
     _, _, vigilantes, _, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
-    rows = [[r["id"], r["nome"], r["cidade"], r["estado"], r["cep"], r["endereco"], r["email"], r["telefone"], r["escolaridade"], r["possui_cfv"], r["instituicao_formacao"], r["data_ultima_reciclagem"], r["curso_ultima_reciclagem"], r["ultima_experiencia_profissional"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["ip_cadastro"], r["created_at"]] for r in vigilantes]
-    output = _build_workbook("Vigilantes", ["ID", "Nome", "Cidade", "Estado", "CEP", "Endereço", "E-mail", "Telefone", "Escolaridade", "Possui CFV", "Instituição de Formação", "Data Última Reciclagem", "Curso Última Reciclagem", "Última Experiência", "Status", "Antifraude", "Score", "Flags", "IP Cadastro", "Criado em"], rows)
+    rows = [[r["id"], r["nome"], r["cidade"], r["estado"], r["cep"], r["endereco"], r["email"], r["telefone"], r["escolaridade"], r["possui_cfv"], r["instituicao_formacao"], r["data_ultima_reciclagem"], r["curso_ultima_reciclagem"], r["ultima_experiencia_profissional"], r["status"], r["antifraude_status"], r["antifraude_score"], r["antifraude_flags"], r["created_at"]] for r in vigilantes]
+    output = _build_workbook("Vigilantes", ["ID", "Nome", "Cidade", "Estado", "CEP", "Endereço", "E-mail", "Telefone", "Escolaridade", "Possui CFV", "Instituição de Formação", "Data Última Reciclagem", "Curso Última Reciclagem", "Última Experiência", "Status", "Antifraude", "Score", "Flags", "Criado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "vigilantes", None, f"Exportação de vigilantes.xlsx com {len(rows)} linhas")
     return send_file(output, as_attachment=True, download_name="vigivagas_vigilantes.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -319,6 +321,7 @@ def exportar_vagas():
     _, _, _, vagas, _, _, _, _, _, _ = _fetch_dashboard_data(request.args)
     rows = [[r["id"], r["titulo"], r["empresa"], r["recrutador_empresa"], r["cidade"], r["estado"], r["status"], r["total_candidaturas"], r["created_at"]] for r in vagas]
     output = _build_workbook("Vagas", ["ID", "Título", "Empresa", "Empresa do Recrutador", "Cidade", "Estado", "Status", "Total de Candidaturas", "Criado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "vagas", None, f"Exportação de vagas.xlsx com {len(rows)} linhas")
     return send_file(output, as_attachment=True, download_name="vigivagas_vagas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -328,6 +331,7 @@ def exportar_candidaturas():
     _, _, _, _, candidaturas, _, _, _, _, _ = _fetch_dashboard_data(request.args)
     rows = [[r["id"], r["vigilante_nome"], r["vigilante_email"], r["vigilante_telefone"], r["vigilante_cidade"], r["vigilante_estado"], r["vaga_id"], r["vaga_titulo"], r["vaga_empresa"], r["vaga_cidade"], r["vaga_estado"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
     output = _build_workbook("Candidaturas", ["ID", "Vigilante", "E-mail", "Telefone", "Cidade Vigilante", "Estado Vigilante", "Vaga ID", "Título da Vaga", "Empresa", "Cidade da Vaga", "Estado da Vaga", "Status", "Observações", "Criado em", "Atualizado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "candidaturas", None, f"Exportação de candidaturas.xlsx com {len(rows)} linhas")
     return send_file(output, as_attachment=True, download_name="vigivagas_candidaturas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
@@ -352,8 +356,9 @@ def exportar_candidaturas_vaga(vaga_id: int):
         (vaga_id,),
     ).fetchall()
     conn.close()
-    rows = [[r["id"], r["nome"], r["cpf"], r["telefone"], r["email"], r["cidade"], r["curso"], r["reciclagem"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
-    output = _build_workbook("Candidaturas", ["Candidatura ID", "Nome", "CPF", "Telefone", "E-mail", "Cidade", "Curso", "Reciclagem", "Status", "Observações", "Criado em", "Atualizado em"], rows)
+    rows = [[r["id"], r["nome"], r["telefone"], r["email"], r["cidade"], r["curso"], r["reciclagem"], r["status"], r["observacoes"], r["created_at"], r["updated_at"]] for r in candidaturas]
+    output = _build_workbook("Candidaturas", ["Candidatura ID", "Nome", "Telefone", "E-mail", "Cidade", "Curso", "Reciclagem", "Status", "Observações", "Criado em", "Atualizado em"], rows)
+    log_action("mauricio", session.get("mauricio_id"), "exportou_xlsx", "candidaturas_vaga", vaga_id, f"Exportação de candidaturas da vaga {vaga_id} com {len(rows)} linhas; CPF removido da planilha")
     return send_file(output, as_attachment=True, download_name=f"vigivagas_vaga_{vaga_id}_candidaturas.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
